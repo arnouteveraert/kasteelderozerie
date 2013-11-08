@@ -1,3 +1,52 @@
+@import url(http://fonts.googleapis.com/css?family=Antic+Slab);
+
+
+.tp-caption.bigtitel_sliderrozerie{
+			position: absolute; 
+			color: #fff ; 
+			text-shadow: none; 
+			font-weight: 700; 
+			font-size: 50px; 
+			line-height: 40px; 
+			font-family: 'Antic Slab', serif; 
+			margin: 0px; 
+			border-width: 0px; 
+			border-style: none; 
+			white-space:nowrap;	
+			text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+		}
+
+.tp-caption.titel_sliderrozerie{
+			position: absolute; 
+			color: #fff ; 
+			text-shadow: none; 
+			font-weight: 700; 
+			font-size: 40px; 
+			line-height: 40px; 
+			font-family: 'Antic Slab', serif; 
+			margin: 0px; 
+			border-width: 0px; 
+			border-style: none; 
+			white-space:nowrap;	
+			text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);		
+		}
+
+.tp-caption.subtitel_sliderrozerie{
+			position: absolute; 
+			color: #fff; 
+			text-shadow: none; 
+			font-weight: 700; 
+			font-size: 35px; 
+			line-height: 40px; 
+			font-family: 'Antic Slab', serif; 
+			margin: 0px; 
+			border-width: 0px; 
+			border-style: none; 
+			white-space:nowrap;	
+			text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);		
+		}
+
+
 .avada_huge_white_text{
 			position: absolute; 
 			color: #ffffff; 
@@ -242,6 +291,8 @@
 			white-space:nowrap;	
 			text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);		
 		}	
+
+
 					
 .tp-caption.very_large_text{
 			position: absolute; 
