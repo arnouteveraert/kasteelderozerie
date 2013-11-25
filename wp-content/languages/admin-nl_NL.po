@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Administration package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2013-10-25 07:24:43+0000\n"
+"PO-Revision-Date: 2013-10-30 09:35:11+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -761,7 +761,7 @@ msgstr "Audioformaat:"
 
 #: wp-admin/includes/media.php:2534
 msgid "Audio Codec:"
-msgstr "Audio codec:"
+msgstr "Audiocodec:"
 
 #: wp-admin/includes/post.php:1313
 msgid "Saving revision..."
@@ -2537,8 +2537,8 @@ msgstr[1] "<strong>Versie %1$s</strong> was gericht op enkele beveiligingsproble
 #: wp-admin/about.php:162
 msgid "<strong>Version %1$s</strong> addressed %2$s bug."
 msgid_plural "<strong>Version %1$s</strong> addressed %2$s bugs."
-msgstr[0] "<strong>Versie %1$s</strong> bevat %2$s bug."
-msgstr[1] "<strong>Versie %1$s</strong> bevat %2$s bugs."
+msgstr[0] "<strong>Versie %1$s</strong> bevat %2$s bugfix."
+msgstr[1] "<strong>Versie %1$s</strong> bevat %2$s bugfixes."
 
 #: wp-admin/index.php:37
 msgid "Welcome to your WordPress Dashboard! This is the screen you will see when you log in to your site, and gives you access to all the site management features of WordPress. You can get help for any screen by clicking the Help tab in the upper corner."
