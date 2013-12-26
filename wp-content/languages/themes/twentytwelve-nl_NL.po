@@ -13,7 +13,7 @@ msgstr ""
 msgid "http://wordpress.org/themes/twentytwelve"
 msgstr "http://wordpress.org/themes/twentytwelve"
 
-#: functions.php:345
+#: functions.php:353
 msgid "Reply"
 msgstr "Reageren"
 
@@ -24,41 +24,41 @@ msgstr "<span class=\"meta-prep meta-prep-entry-date\">Gepubliceerd </span> <spa
 msgid "The 2012 theme for WordPress is a fully responsive theme that looks great on any device. Features include a front page template with its own widgets, an optional display font, styling for post formats on both index and single views, and an optional no-sidebar page template. Make it yours with a custom menu, header image, and background."
 msgstr "Het 2012 thema voor WordPress is een volledig responsive thema wat er op elk apparaat goed uit ziet. Kenmerken zijn een hoofdpagina template met eigen widgets, een optioneel font, stijling voor post formats op zowel overzichts- als single pagina&#39;s en een optionele template zonder sidebar. Maak het thema je eigen door een aangepast menu, header afbeelding en achtergrond te gebruiken."
 
-#: functions.php:100
+#: functions.php:101
 msgctxt "Open Sans font: on or off"
 msgid "on"
 msgstr "aan"
 
-#: functions.php:105
+#: functions.php:107
 msgctxt "Open Sans font: add new subset (greek, cyrillic, vietnamese)"
 msgid "no-subset"
 msgstr "geen subset."
 
-#: functions.php:240
+#: functions.php:246
 msgid "Appears on posts and pages except the optional Front Page template, which has its own widgets"
 msgstr "Verschijnt op berichten en pagina&#39;s behalve op het optionele voorpaginasjabloon, welke eigen widgets heeft"
 
-#: functions.php:248
+#: functions.php:254
 msgid "First Front Page Widget Area"
 msgstr "Eerste widgetgebied homepagina"
 
-#: functions.php:250 functions.php:260
+#: functions.php:256 functions.php:266
 msgid "Appears when using the optional Front Page template with a page set as Static Front Page"
 msgstr "Verschijnt wanneer de optionele voorpaginasjabloon gebruikt wordt met een pagina ingesteld als statische voorpagina"
 
-#: functions.php:258
+#: functions.php:264
 msgid "Second Front Page Widget Area"
 msgstr "Tweede widgetgebied hoofdpagina"
 
-#: functions.php:384
+#: functions.php:396
 msgid "This entry was posted in %1$s and tagged %2$s on %3$s<span class=\"by-author\"> by %4$s</span>."
 msgstr "Dit bericht werd geplaatst in %1$s en getagged met %2$s op %3$s<span class=\"by-author\"> door %4$s</span>."
 
-#: functions.php:386
+#: functions.php:398
 msgid "This entry was posted in %1$s on %3$s<span class=\"by-author\"> by %4$s</span>."
 msgstr "Dit bericht werd geplaatst in %1$s op %3$s<span class=\"by-author\"> door %4$s</span>."
 
-#: functions.php:388
+#: functions.php:400
 msgid "This entry was posted on %3$s<span class=\"by-author\"> by %4$s</span>."
 msgstr "Dit bericht werd geplaatst op %3$s<span class=\"by-author\"> door %4$s</span>."
 
@@ -78,11 +78,11 @@ msgstr "Homepage sjabloon"
 msgid "Full-width Page Template, No Sidebar"
 msgstr "Volledige breedte pagina template, geen sidebar"
 
-#: content.php:14
+#: content.php:16
 msgid "Featured post"
 msgstr "Uitgelicht bericht"
 
-#: functions.php:213
+#: functions.php:215
 msgid "Page %s"
 msgstr "Pagina %s"
 
@@ -91,12 +91,12 @@ msgid "Link"
 msgstr "Link"
 
 #: content-aside.php:23 content-image.php:23 content-link.php:21
-#: content-quote.php:20 content-status.php:27 content.php:28
+#: content-quote.php:20 content-status.php:37 content.php:30
 msgid "% Replies"
 msgstr "% reacties"
 
 #: content-aside.php:23 content-image.php:23 content-link.php:21
-#: content-quote.php:20 content-status.php:27 content.php:28
+#: content-quote.php:20 content-status.php:37 content.php:30
 msgid "1 Reply"
 msgstr "1 reactie"
 
@@ -108,11 +108,11 @@ msgstr "Het lijkt erop dat we niet kunnen vinden waar je naar zoekt. Misschien k
 msgid "Apologies, but no results were found. Perhaps searching will help find a related post."
 msgstr "Helaas, er zijn geen resultaten gevonden. Misschien helpt zoeken je om een gerelateerd bericht te vinden."
 
-#: functions.php:324
+#: functions.php:332
 msgid "Post author"
 msgstr "Bericht auteur"
 
-#: functions.php:309
+#: functions.php:317
 msgid "(Edit)"
 msgstr "(bewerken)"
 
@@ -132,7 +132,7 @@ msgstr "Geen berichten om te tonen"
 msgid "Ready to publish your first post? <a href=\"%s\">Get started here</a>."
 msgstr "Klaar om je eerste bericht te publiceren? <a href=\"%s\">Hier kan je starten</a>."
 
-#: functions.php:378
+#: functions.php:390
 msgid "View all posts by %s"
 msgstr "Alle berichten tonen van %s"
 
@@ -162,11 +162,11 @@ msgstr "Twenty Twelve"
 msgid "the WordPress team"
 msgstr "het WordPressteam"
 
-#: functions.php:336
+#: functions.php:344
 msgid "Your comment is awaiting moderation."
 msgstr "Je reactie is in afwachting van moderatie."
 
-#: functions.php:330
+#: functions.php:338
 msgid "%1$s at %2$s"
 msgstr "%1$s om %2$s"
 
@@ -175,23 +175,23 @@ msgstr "%1$s om %2$s"
 msgid "Permalink to %s"
 msgstr "Permalink naar %s"
 
-#: functions.php:238
+#: functions.php:244
 msgid "Main Sidebar"
 msgstr "Hoofd sidebar"
 
-#: functions.php:282 single.php:20
+#: functions.php:288 single.php:20
 msgid "Post navigation"
 msgstr "Berichtnavigatie"
 
-#: functions.php:283
+#: functions.php:289
 msgid "<span class=\"meta-nav\">&larr;</span> Older posts"
 msgstr "<span class=\"meta-nav\">&larr;</span> Oudere berichten"
 
-#: functions.php:284
+#: functions.php:290
 msgid "Newer posts <span class=\"meta-nav\">&rarr;</span>"
 msgstr "Nieuwere berichten <span class=\"meta-nav\">&rarr;</span>"
 
-#: functions.php:309
+#: functions.php:317
 msgid "Pingback:"
 msgstr "Pingback:"
 
@@ -199,13 +199,13 @@ msgstr "Pingback:"
 msgid "Primary Menu"
 msgstr "Primair menu"
 
-#: footer.php:17
+#: footer.php:16
 msgid "Proudly powered by %s"
 msgstr "Ondersteund door %s"
 
 #: content-aside.php:26 content-image.php:26 content-link.php:24
-#: content-page.php:24 content-quote.php:23 content-status.php:30
-#: content.php:46 functions.php:341 image.php:37
+#: content-page.php:24 content-quote.php:23 content-status.php:40
+#: content.php:48 functions.php:349 image.php:37
 msgid "Edit"
 msgstr "Bewerken"
 
@@ -217,7 +217,7 @@ msgstr "Nieuwere reacties &rarr;"
 msgid "Comments are closed."
 msgstr "Reacties plaatsen niet mogelijk."
 
-#: author.php:53 content.php:53
+#: author.php:63 content.php:59
 msgid "About %s"
 msgstr "Over %s"
 
@@ -258,20 +258,20 @@ msgid "Monthly Archives: %s"
 msgstr "Maandelijks archief: %s"
 
 #: content-aside.php:15 content-image.php:13 content-link.php:14
-#: content-quote.php:13 content-status.php:21 content.php:39
+#: content-quote.php:13 content-status.php:31 content.php:41
 msgid "Continue reading <span class=\"meta-nav\">&rarr;</span>"
 msgstr "Lees verder <span class=\"meta-nav\">&rarr;</span>"
 
 #: content-aside.php:23 content-image.php:23 content-link.php:21
-#: content-quote.php:20 content-status.php:27 content.php:28
+#: content-quote.php:20 content-status.php:37 content.php:30
 msgid "Leave a reply"
 msgstr "Een reactie plaatsen"
 
-#: footer.php:17
+#: footer.php:16
 msgid "http://wordpress.org/"
 msgstr "http://wordpress.org/"
 
-#: footer.php:17
+#: footer.php:16
 msgid "Semantic Personal Publishing Platform"
 msgstr "Semantisch persoonlijk publicatie platform"
 
@@ -291,15 +291,15 @@ msgstr "Reactienavigatie"
 msgid "&larr; Older Comments"
 msgstr "&larr; Oudere reacties"
 
-#: functions.php:364 functions.php:367
+#: functions.php:376 functions.php:379
 msgid ", "
 msgstr ", "
 
-#: content-page.php:21 content.php:40 image.php:92
+#: content-page.php:21 content.php:42 image.php:102
 msgid "Pages:"
 msgstr "Pagina&#39;s:"
 
-#: content.php:57
+#: content.php:63
 msgid "View all posts by %s <span class=\"meta-nav\">&rarr;</span>"
 msgstr "Bekijk alle berichten van %s <span class=\"meta-nav\">&rarr;</span>"
 
