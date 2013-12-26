@@ -6,7 +6,8 @@
 			<a href="<?php bloginfo('url'); ?>">
 				<img src="<?php echo $data['logo']; ?>" alt="<?php bloginfo('name'); ?>" class="normal_logo" />
 				<?php if($data['logo_retina'] && $data['retina_logo_width'] && $data['retina_logo_height']): ?>
-				<img src="<?php echo $data["logo_retina"]; ?>" alt="<?php bloginfo('name'); ?>" style="width:<?php echo $data["retina_logo_width"]; ?>px;height:<?php echo $data["retina_logo_height"]; ?>px;" class="retina_logo" />
+
+				<img src="<?php echo $data["logo_retina"]; ?>" alt="<?php bloginfo('name'); ?>" style="max-width:<?php echo $data["retina_logo_width"].$pixels; ?>;max-height:<?php echo $data["retina_logo_height"].$pixels; ?>;" class="retina_logo" />
 				<?php endif; ?>
 			</a>
 		</div>
