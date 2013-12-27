@@ -209,18 +209,43 @@ $this->select(	'page_bg_repeat',
 				''
 			);
 ?>
+<?php
+$this->text(	'page_title_custom_text',
+				'Page Title Bar Custom Text',
+				''
+			);
+?>
+<?php
+$this->text(	'page_title_custom_subheader',
+				'Page Title Bar Custom Subheader Text',
+				''
+			);
+?>
+<?php
+$this->text(	'page_title_height',
+				'Page Title Bar Height',
+				''
+			);
+?>
 <?php $this->upload('page_title_bar_bg', 'Page Title Bar Background'); ?>
 <?php $this->upload('page_title_bar_bg_retina', 'Page Title Bar Background Retina'); ?>
 <?php
 $this->select(	'page_title_bar_bg_full',
 				'100% Background Image',
-				array('no' => 'No', 'yes' => 'Yes'),
+				array('default' => 'Default', 'no' => 'No', 'yes' => 'Yes'),
 				''
 			);
 ?>
 <?php
 $this->text(	'page_title_bar_bg_color',
 				'Page Title Bar Background Color (Hex Code)',
+				''
+			);
+?>
+<?php
+$this->select(	'page_title_bg_parallax',
+				'Parallax Background Image',
+				array('default' => 'Default', 'no' => 'No', 'yes' => 'Yes'),
 				''
 			);
 ?>

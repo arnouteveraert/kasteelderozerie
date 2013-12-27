@@ -220,7 +220,7 @@ if(is_array($slides)) {
 									}
 
 									if(!empty($sublayer['url']) && preg_match('/^\#[0-9]/', $sublayer['url']) == 0) {
-										$data .= '<a href="'.$sublayer['url'].'" target="'.$sublayer['target'].'" '.$sublayerID.' '.$sublayerRel.' class="ls-s'.$sublayer['level'].'" '.$sublayerTitle.' style="position: absolute; top: '.layerslider_check_unit($sublayer['top']).'; left:'.layerslider_check_unit($sublayer['left']).'; display: block; '.$slidedirection.' '.$slideoutdirection.' durationin : '.$sublayer['durationin'].'; durationout : '.$sublayer['durationout'].'; easingin : '.$sublayer['easingin'].'; easingout : '.$sublayer['easingout'].'; delayin : '.$sublayer['delayin'].'; delayout : '.$sublayer['delayout'].'; '.$sublayer['rotatein'].''.$sublayer['rotateout'].''.$sublayer['scalein'].''.$sublayer['scaleout'].'showuntil : '.$sublayer['showuntil'].'">';
+										$data .= '<a href="'.$sublayer['url'].'" target="'.$sublayer['target'].'" '.$sublayerID.' '.$sublayerRel.' class="ls-s'.$sublayer['level'].''.$sublayerClass.'" '.$sublayerTitle.' style="position: absolute; top: '.layerslider_check_unit($sublayer['top']).'; left:'.layerslider_check_unit($sublayer['left']).'; display: block; '.$slidedirection.' '.$slideoutdirection.' durationin : '.$sublayer['durationin'].'; durationout : '.$sublayer['durationout'].'; easingin : '.$sublayer['easingin'].'; easingout : '.$sublayer['easingout'].'; delayin : '.$sublayer['delayin'].'; delayout : '.$sublayer['delayout'].'; '.$sublayer['rotatein'].''.$sublayer['rotateout'].''.$sublayer['scalein'].''.$sublayer['scaleout'].'showuntil : '.$sublayer['showuntil'].'">';
 
 											if(empty($sublayer['type']) || $sublayer['type'] == 'img') {
 												if(!empty($sublayer['image'])) {

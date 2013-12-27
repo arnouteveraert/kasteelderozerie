@@ -7,7 +7,7 @@ function contact_info_load_widgets()
 }
 
 class Contact_Info_Widget extends WP_Widget {
-	
+
 	function Contact_Info_Widget()
 	{
 		$widget_ops = array('classname' => 'contact_info', 'description' => '');
@@ -16,7 +16,7 @@ class Contact_Info_Widget extends WP_Widget {
 
 		$this->WP_Widget('contact_info-widget', 'Avada: Contact Info', $widget_ops, $control_ops);
 	}
-	
+
 	function widget($args, $instance)
 	{
 		extract($args);
@@ -28,29 +28,35 @@ class Contact_Info_Widget extends WP_Widget {
 			echo $before_title.$title.$after_title;
 		}
 		?>
-		<?php if($instance['address']): ?>
+		<div class="contact-info-container">
+		<?php if(isset($instance['address']) && $instance['address']): ?>
 		<p class="address"><?php echo $instance['address']; ?></p>
 		<?php endif; ?>
 
-		<?php if($instance['phone']): ?>
+		<?php if(isset($instance['phone']) && $instance['phone']): ?>
 		<p class="phone"><?php _e('Phone:', 'Avada'); ?> <?php echo $instance['phone']; ?></p>
 		<?php endif; ?>
 
-		<?php if($instance['fax']): ?>
+		<?php if(isset($instance['mobile']) && $instance['mobile']): ?>
+		<p class="mobile"><?php _e('Mobile:', 'Avada'); ?> <?php echo $instance['mobile']; ?></p>
+		<?php endif; ?>
+
+		<?php if(isset($instance['fax']) && $instance['fax']): ?>
 		<p class="fax"><?php _e('Fax:', 'Avada'); ?> <?php echo $instance['fax']; ?></p>
 		<?php endif; ?>
 
-		<?php if($instance['email']): ?>
+		<?php if(isset($instance['email']) && $instance['email']): ?>
 		<p class="email"><?php _e('Email:', 'Avada'); ?> <a href="mailto:<?php echo $instance['email']; ?>"><?php if($instance['emailtxt']) { echo $instance['emailtxt']; } else { echo $instance['email']; } ?></a></p>
 		<?php endif; ?>
 
-		<?php if($instance['web']): ?>
-		<p class="web"><?php _e('Web:', 'Avada'); ?> <a href="<?php echo $instance['web']; ?>"><?php if($instance['webtxt']) { echo $instance['webtxt']; } else { echo $instance['web']; } ?></a></p>
+		<?php if(isset($instance['web']) && $instance['web']): ?>
+		<p class="web"><?php _e('Web:', 'Avada'); ?> <a href="<?php echo $instance['web']; ?>"><?php if(isset($instance['webtxt']) && $instance['webtxt']) { echo $instance['webtxt']; } else { echo $instance['web']; } ?></a></p>
 		<?php endif; ?>
+		</div>
 		<?php
 		echo $after_widget;
 	}
-	
+
 	function update($new_instance, $old_instance)
 	{
 		$instance = $old_instance;
@@ -58,6 +64,7 @@ class Contact_Info_Widget extends WP_Widget {
 		$instance['title'] = $new_instance['title'];
 		$instance['address'] = $new_instance['address'];
 		$instance['phone'] = $new_instance['phone'];
+		$instance['mobile'] = $new_instance['mobile'];
 		$instance['fax'] = $new_instance['fax'];
 		$instance['email'] = $new_instance['email'];
 		$instance['emailtxt'] = $new_instance['emailtxt'];
@@ -69,7 +76,7 @@ class Contact_Info_Widget extends WP_Widget {
 
 	function form($instance)
 	{
-		$defaults = array('title' => 'Contact Info');
+		$defaults = array('title' => 'Contact Info', 'address' => '', 'phone' => '', 'mobile' => '', 'fax' => '', 'email' => '', 'emailtxt' => '', 'web' => '', 'webtxt' => '');
 		$instance = wp_parse_args((array) $instance, $defaults); ?>
 		<p>
 			<label for="<?php echo $this->get_field_id('title'); ?>">Title:</label>
@@ -82,6 +89,10 @@ class Contact_Info_Widget extends WP_Widget {
 		<p>
 			<label for="<?php echo $this->get_field_id('phone'); ?>">Phone:</label>
 			<input class="widefat" style="width: 216px;" id="<?php echo $this->get_field_id('phone'); ?>" name="<?php echo $this->get_field_name('phone'); ?>" value="<?php echo $instance['phone']; ?>" />
+		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id('mobile'); ?>">Mobile:</label>
+			<input class="widefat" style="width: 216px;" id="<?php echo $this->get_field_id('mobile'); ?>" name="<?php echo $this->get_field_name('mobile'); ?>" value="<?php echo $instance['mobile']; ?>" />
 		</p>
 		<p>
 			<label for="<?php echo $this->get_field_id('fax'); ?>">Fax:</label>

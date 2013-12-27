@@ -9,8 +9,12 @@ jQuery.noConflict();
 
 /** Fire up jQuery - let's dance! 
  */
+ if(jQuery.browser.webkit && jQuery.browser.version >= 537.71) {
+	alert('Theme options panel does not work with Safari version 6.1 or higher in recent MacOS update. This is a temporary browser bug. Please use a different browser like Google Chrome to control theme options. Sorry for the inconvenience.');
+	window.stop();
+	window.location = window.location.origin + '' + window.location.pathname;
+}
 jQuery(document).ready(function($){
-	
 	//(un)fold options in a checkbox-group
   	jQuery('.fld').click(function() {
     	var $fold='.f_'+this.id;
@@ -529,7 +533,7 @@ jQuery(document).ready(function($){
 		$('.ajax-loading-img').fadeIn();
 		
 		//get serialized data from all our option fields			
-		var serializedReturn = $('#of_form :input[name][name!="security"][name!="of_reset"]').serialize();
+		var serializedReturn = $('#of_form :input[name][name!="security"][name!="of_reset"]').serialize().replace(/\%22/g, "'");
 						
 		var data = {
 			type: 'save',
@@ -717,8 +721,11 @@ jQuery(document).ready(function($) {
 
     var light = new Array();
     light['header_bg_color'] = '#ffffff';
-    light['header_border_color'] = '#efefef';
+    light['header_border_color'] = '#e5e5e5';
     light['content_bg_color'] = '#ffffff';
+    light['slidingbar_bg_color'] = '#363839';
+    light['header_sticky_bg_color'] = '#ffffff';
+    light['slidingbar_border_color'] = '#e9eaee';
     light['footer_bg_color'] = '#363839';
     light['footer_border_color'] = '#e9eaee';
     light['copyright_border_color'] = '#4B4C4D';
@@ -727,6 +734,8 @@ jQuery(document).ready(function($) {
     light['testimonial_bg_color'] = '#f6f3f3';
     light['testimonial_text_color'] = '#747474';
     light['sep_color'] = '#e0dede';
+    light['slidingbar_divider_color'] = '#505152';
+    light['footer_divider_color'] = '#505152';
     light['form_bg_color'] = '#ffffff';
     light['form_text_color'] = '#aaa9a9';
     light['form_border_color'] = '#d2d2d2';
@@ -740,21 +749,24 @@ jQuery(document).ready(function($) {
     light['h6_color'] = '#333333';
     light['body_text_color'] = '#747474';
     light['link_color'] = '#333333';
+    light['menu_h45_bg_color'] = '#FFFFFF';
     light['menu_first_color'] = '#333333';
     light['menu_sub_bg_color'] = '#edebeb';
     light['menu_sub_color'] = '#333333';
     light['menu_bg_hover_color'] = '#f5f4f4';
     light['menu_sub_sep_color'] = '#dcdadb';
     light['snav_color'] = '#ffffff';
-    light['header_top_first_border_color'] = '#efefef';
+    light['header_top_first_border_color'] = '#e5e5e5';
     light['header_top_sub_bg_color'] = '#ffffff';
-    light['header_top_menu_sub_color'] = '#333333';
+    light['header_top_menu_sub_color'] = '#747474';
     light['header_top_menu_bg_hover_color'] = '#fafafa';
     light['header_top_menu_sub_hover_color'] = '#333333';
-    light['header_top_menu_sub_sep_color'] = '#efefef';
+    light['header_top_menu_sub_sep_color'] = '#e5e5e5';
     light['sidebar_bg_color'] = '#ffffff';
     light['page_title_bg_color'] = '#F6F6F6';
     light['page_title_border_color'] = '#d2d3d4';
+	light['breadcrumbs_text_color'] = '#333333';	
+	light['sidebar_heading_color'] = '#333333';
     light['accordian_inactive_color'] = '#333333';
     light['counter_filled_color'] = '#a0ce4e';
     light['counter_unfilled_color'] = '#f6f6f6';
@@ -769,6 +781,8 @@ jQuery(document).ready(function($) {
     light['icon_color'] = '#ffffff';
     light['imgframe_border_color'] = '#f6f6f6';
     light['imgframe_style_color'] = '#000000';
+    light['sep_pricing_box_heading_color'] = '#333333';
+    light['full_boxed_pricing_box_heading_color'] = '#333333';
     light['pricing_bg_color'] = '#ffffff';
     light['pricing_border_color'] = '#f8f8f8';
     light['pricing_divider_color'] = '#ededed';
@@ -782,20 +796,28 @@ jQuery(document).ready(function($) {
     light['woo_cart_bg_color'] = '#fafafa';
     light['qty_bg_color'] = '#fbfaf9';
     light['qty_bg_hover_color'] = '#ffffff';
+    light['bbp_forum_header_bg'] = '#f6f6f6';
+    light['bbp_forum_border_color'] = '#f6f6f6'; 
+    light['checklist_icons_color'] = '#ffffff';
 
     var dark = new Array()
     dark['header_bg_color'] = '#29292a';
     dark['header_border_color'] = '#3e3e3e';
-    dark['header_top_bg_color'] = '#3e3e3e';
+    dark['header_top_bg_color'] = '#29292a';
     dark['content_bg_color'] = '#29292a';
-    dark['footer_bg_color'] = '#363839';
-    dark['footer_border_color'] = '#484747';
+    dark['slidingbar_bg_color'] = '#363839';
+    dark['header_sticky_bg_color'] = '#29292a';
+    dark['slidingbar_border_color'] = '#484747';    
+    dark['footer_bg_color'] = '#2d2d2d';
+    dark['footer_border_color'] = '#403f3f';
     dark['copyright_border_color'] = '#4B4C4D';
-    dark['copyright_bg_color'] = '#282a2b';
+    dark['copyright_bg_color'] = '#4B4C4D';
     dark['title_border_color'] = '#3e3e3e';
     dark['testimonial_bg_color'] = '#3e3e3e';
     dark['testimonial_text_color'] = '#aaa9a9';
     dark['sep_color'] = '#3e3e3e';
+    dark['slidingbar_divider_color'] = '#505152';
+    dark['footer_divider_color'] = '#505152';
     dark['form_bg_color'] = '#3e3e3e';
     dark['form_text_color'] = '#cccccc';
     dark['form_border_color'] = '#212122';
@@ -809,13 +831,14 @@ jQuery(document).ready(function($) {
     dark['h6_color'] = '#ffffff';
     dark['body_text_color'] = '#aaa9a9';
     dark['link_color'] = '#ffffff';
+    dark['menu_h45_bg_color'] = '#29292A';
     dark['menu_first_color'] = '#ffffff';
     dark['menu_sub_bg_color'] = '#3e3e3e';
     dark['menu_sub_color'] = '#d6d6d6';
     dark['menu_bg_hover_color'] = '#383838';
     dark['menu_sub_sep_color'] = '#313030';
     dark['snav_color'] = '#747474';
-    dark['header_top_first_border_color'] = '#555555';
+    dark['header_top_first_border_color'] = '#3e3e3e';
     dark['header_top_sub_bg_color'] = '#29292a';
     dark['header_top_menu_sub_color'] = '#d6d6d6';
     dark['header_top_menu_bg_hover_color'] = '#333333';
@@ -824,6 +847,8 @@ jQuery(document).ready(function($) {
     dark['sidebar_bg_color'] = '#29292a';
     dark['page_title_bg_color'] = '#353535';
     dark['page_title_border_color'] = '#464646';
+	dark['breadcrumbs_text_color'] = '#ffffff';
+	dark['sidebar_heading_color'] = '#ffffff';	
     dark['accordian_inactive_color'] = '#3e3e3e';
     dark['counter_filled_color'] = '#a0ce4e';
     dark['counter_unfilled_color'] = '#3e3e3e';
@@ -838,6 +863,8 @@ jQuery(document).ready(function($) {
     dark['icon_color'] = '#ffffff';
     dark['imgframe_border_color'] = '#494848';
     dark['imgframe_style_color'] = '#000000';
+	dark['sep_pricing_box_heading_color'] = '#ffffff';
+    dark['full_boxed_pricing_box_heading_color'] = '#AAA9A9';	
     dark['pricing_bg_color'] = '#3e3e3e';
     dark['pricing_border_color'] = '#353535';
     dark['pricing_divider_color'] = '#29292a';
@@ -851,6 +878,9 @@ jQuery(document).ready(function($) {
     dark['woo_cart_bg_color'] = '#333333';
     dark['qty_bg_color'] = '#29292a';
     dark['qty_bg_hover_color'] = '#383838';
+    dark['bbp_forum_header_bg'] = '#383838';
+    dark['bbp_forum_border_color'] = '#212121';     
+    dark['checklist_icons_color'] = '#333333';
 
     $('#scheme_type').change(function() {
         colorscheme = $(this).val();
@@ -864,9 +894,9 @@ jQuery(document).ready(function($) {
 
         var name = $('#section-header_layout input:checked').val();
         if($(this).val() == 'Light') {
-    		jQuery('#checklist_icons_color option:selected,#social_links_color option:selected').removeAttr('selected');
-    		jQuery('#checklist_icons_color,#social_links_color').val('Dark');
-    		jQuery('#section-checklist_icons_color .select_wrapper span,#section-social_links_color .select_wrapper span').html('Dark');
+    		jQuery('#social_links_color option:selected,#socialbox_icons_color option:selected').removeAttr('selected');
+    		jQuery('#social_links_color,#socialbox_icons_color').val('Dark');
+    		jQuery('#section-social_links_color .select_wrapper span,#section-socialbox_icons_color .select_wrapper span').html('Dark');
 	    	if(name == 'v2') {
 	    		of_update_color('header_top_bg_color', '#ffffff');
 	    		of_update_color('header_top_first_border_color', '#efefef');
@@ -883,9 +913,9 @@ jQuery(document).ready(function($) {
 	    		jQuery('#section-header_icons_color .select_wrapper span').html('Light');
 	    	}
         } else if($(this).val() == 'Dark') {
-    		jQuery('#checklist_icons_color option:selected,#social_links_color option:selected').removeAttr('selected');
-    		jQuery('#checklist_icons_color,#social_links_color').val('Light');
-    		jQuery('#section-checklist_icons_color .select_wrapper span,#section-social_links_color .select_wrapper span').html('Light');
+    		jQuery('#social_links_color option:selected,#socialbox_icons_color option:selected').removeAttr('selected');
+			jQuery('#social_links_color,#socialbox_icons_color').val('Light');
+			jQuery('#section-social_links_color .select_wrapper span,#section-socialbox_icons_color .select_wrapper span').html('Light');
 	    	if(name == 'v2') {
 	    		of_update_color('header_top_bg_color', '#29292a');
 	    		of_update_color('header_top_first_border_color', '#3e3e3e');
@@ -1013,5 +1043,22 @@ jQuery(document).ready(function($) {
     	} else {
     		$('#nav_height').attr('value', '83');
     	}
+
+    	if(name == 'v4') {
+    		$('#margin_logo_top, #margin_logo_bottom').attr('value', '0px');
+    	} else {
+    		$('#margin_logo_top, #margin_logo_bottom').attr('value', '31px');
+    	}
     });
+
+	// if clicked on import data button
+	$('#section-demo_data .button-primary').live('click', function(e) {
+		var confirm = window.confirm('WARNING: Clicking this button will replace your current theme options, sliders and widgets.  It can also take a minute to complete. Importing data is recommended on fresh installs only once. Importing on sites with content or importing twice will duplicate menus, pages and all posts.');
+
+		if(confirm == false) {
+			return false;
+		} else {
+			return true;
+		}
+	});
 });

@@ -1,25 +1,34 @@
 <?php
-function get_related_posts($post_id) {
+function get_related_posts($post_id, $number_posts = -1) {
 	$query = new WP_Query();
-    
+
     $args = '';
 
+	if($number_posts == 0) {
+		return $query;
+	}
+
 	$args = wp_parse_args($args, array(
-		'showposts' => -1,
+		'posts_per_page' => $number_posts,
 		'post__not_in' => array($post_id),
 		'ignore_sticky_posts' => 0,
+        'meta_key' => '_thumbnail_id',
         'category__in' => wp_get_post_categories($post_id)
 	));
-	
+
 	$query = new WP_Query($args);
-	
+
   	return $query;
 }
 
-function get_related_projects($post_id) {
+function get_related_projects($post_id, $number_posts = 8) {
     $query = new WP_Query();
-    
+
     $args = '';
+
+	if($number_posts == 0) {
+		return $query;
+	}
 
     $item_cats = get_the_terms($post_id, 'portfolio_category');
     if($item_cats):
@@ -29,9 +38,10 @@ function get_related_projects($post_id) {
     endif;
 
     $args = wp_parse_args($args, array(
-        'showposts' => -1,
+        'posts_per_page' => $number_posts,
         'post__not_in' => array($post_id),
         'ignore_sticky_posts' => 0,
+        'meta_key' => '_thumbnail_id',
         'post_type' => 'avada_portfolio',
         'tax_query' => array(
             array(
@@ -41,18 +51,18 @@ function get_related_projects($post_id) {
             )
         )
     ));
-    
+
     $query = new WP_Query($args);
-    
+
     return $query;
 }
 
-if(!function_exists('themefusion_pagination')): 
+if(!function_exists('themefusion_pagination')):
 function themefusion_pagination($pages = '', $range = 2)
 {
     global $data;
-    
-     $showitems = ($range * 2)+1;  
+
+     $showitems = ($range * 2)+1;
 
      global $paged;
      if(empty($paged)) $paged = 1;
@@ -65,11 +75,15 @@ function themefusion_pagination($pages = '', $range = 2)
          {
              $pages = 1;
          }
-     }   
+     }
 
      if(1 != $pages)
      {
-         echo "<div class='pagination clearfix'>";
+     	if ( ( $data['blog_pagination_type'] == 'Infinite Scroll' && is_home() ) || ( $data['grid_pagination_type'] == 'Infinite Scroll' && is_page_template('portfolio-grid.php') ) ) {
+        	echo "<div class='pagination infinite-scroll clearfix'>";
+        } else {
+        	echo "<div class='pagination clearfix'>";
+        }
          //if($paged > 2 && $paged > $range+1 && $showitems < $pages) echo "<a href='".get_pagenum_link(1)."'><span class='arrows'>&laquo;</span> First</a>";
          if($paged > 1) echo "<a class='pagination-prev' href='".get_pagenum_link($paged - 1)."'><span class='page-prev'></span>".__('Previous', 'Avada')."</a>";
 
@@ -81,7 +95,7 @@ function themefusion_pagination($pages = '', $range = 2)
              }
          }
 
-         if ($paged < $pages) echo "<a class='pagination-next' href='".get_pagenum_link($paged + 1)."'>".__('Next', 'Avada')."<span class='page-next'></span></a>";  
+         if ($paged < $pages) echo "<a class='pagination-next' href='".get_pagenum_link($paged + 1)."'>".__('Next', 'Avada')."<span class='page-next'></span></a>";
          //if ($paged < $pages-1 &&  $paged+$range-1 < $pages && $showitems < $pages) echo "<a href='".get_pagenum_link($pages)."'>Last <span class='arrows'>&raquo;</span></a>";
          echo "</div>\n";
      }
@@ -91,19 +105,19 @@ endif;
 function string_limit_words($string, $word_limit)
 {
 	$words = explode(' ', $string, ($word_limit + 1));
-	
+
 	if(count($words) > $word_limit) {
 		array_pop($words);
 	}
-	
+
 	return implode(' ', $words);
 }
 
-if(!function_exists('themefusion_breadcrumb')): 
+if(!function_exists('themefusion_breadcrumb')):
 function themefusion_breadcrumb() {
         global $data,$post;
         echo '<ul class="breadcrumbs">';
-        
+
          if ( !is_front_page() ) {
         echo '<li>'.$data['breacrumb_prefix'].' <a href="';
         echo home_url();
@@ -121,8 +135,8 @@ function themefusion_breadcrumb() {
         }
 
         if(is_singular('avada_portfolio')) {
-            echo get_the_term_list($post->ID, 'portfolio_category', '<li>', '&nbsp;/&nbsp;&nbsp;', '</li>');  
-            echo '<li>'.get_the_title().'</li>'; 
+            echo get_the_term_list($post->ID, 'portfolio_category', '<li>', '&nbsp;/&nbsp;&nbsp;', '</li>');
+            echo '<li>'.get_the_title().'</li>';
         }
 
         if (is_tax()) {
@@ -143,7 +157,7 @@ function themefusion_breadcrumb() {
                 $parent_id  = $page->post_parent;
             endwhile;
             $parents = array_reverse( $parents );
-            echo join( ' ', $parents );
+            echo join( '', $parents );
             echo '<li>'.get_the_title().'</li>';
         }
         if(is_single() && !is_singular('avada_portfolio')) {
@@ -162,7 +176,7 @@ function themefusion_breadcrumb() {
                 foreach ( $categories as $cat ) :
                     $cats[] = '<li><a href="' . get_category_link( $cat->term_id ) . '" title="' . $cat->name . '">' . $cat->name . '</a></li>';
                 endforeach;
-                echo join( ' ', $cats );
+                echo join( '', $cats );
             endif;
             echo '<li>'.get_the_title().'</li>';
         }
@@ -198,7 +212,7 @@ function tf_addURLParameter($url, $paramName, $paramValue) {
 
      $params = array();
      parse_str($url_data['query'], $params);
-     $params[$paramName] = $paramValue;   
+     $params[$paramName] = $paramValue;
      $url_data['query'] = http_build_query($params);
      return tf_build_url($url_data);
 }
@@ -221,7 +235,9 @@ function tf_addURLParameter($url, $paramName, $paramValue) {
              $url .= ':' . $url_data['port'];
          }
      }
-     $url .= $url_data['path'];
+     if (isset($url_data['path'])) {
+     	$url .= $url_data['path'];
+     }
      if (isset($url_data['query'])) {
          $url .= '?' . $url_data['query'];
      }
@@ -259,7 +275,7 @@ function avada_hex2rgb($hex) {
 add_action('wp_head', 'avada_set_post_views');
 function avada_set_post_views() {
     global $post;
-    
+
     if('post' == get_post_type() && is_single()) {
         $postID = $post->ID;
 
@@ -278,3 +294,203 @@ function avada_set_post_views() {
         }
     }
 }
+
+add_filter( 'bbp_get_forum_pagination_links', 'tf_get_forum_pagination_links', 1 );
+function tf_get_forum_pagination_links() {
+	$bbp = bbpress();
+
+	$pagination_links = $bbp->topic_query->pagination_links;
+
+	$pagination_links = str_replace( 'page-numbers current', 'current', $pagination_links );
+	$pagination_links = str_replace( 'page-numbers', 'inactive', $pagination_links );
+	$pagination_links = str_replace( 'prev inactive', 'pagination-prev', $pagination_links );
+	$pagination_links = str_replace( 'next inactive', 'pagination-next', $pagination_links );
+
+	$pagination_links = str_replace( '&larr;', __('Previous', 'Avada').'<span class="page-prev"></span>', $pagination_links );
+	$pagination_links = str_replace( '&rarr;', __('Next', 'Avada').'<span class="page-next"></span>', $pagination_links );
+
+	return $pagination_links;
+}
+
+add_filter( 'bbp_get_topic_pagination_links', 'tf_get_topic_pagination_links', 1 );
+function tf_get_topic_pagination_links() {
+	$bbp = bbpress();
+
+	$pagination_links = $bbp->reply_query->pagination_links;
+	$permalink        = get_permalink( $bbp->current_topic_id );
+	$max_num_pages    = $bbp->reply_query->max_num_pages;
+	$paged            = $bbp->reply_query->paged;
+
+	$pagination_links = str_replace( 'page-numbers current', 'current', $pagination_links );
+	$pagination_links = str_replace( 'page-numbers', 'inactive', $pagination_links );
+	$pagination_links = str_replace( 'prev inactive', 'pagination-prev', $pagination_links );
+	$pagination_links = str_replace( 'next inactive', 'pagination-next', $pagination_links );
+
+	$pagination_links = str_replace( '&larr;', __('Previous', 'Avada').'<span class="page-prev"></span>', $pagination_links );
+	$pagination_links = str_replace( '&rarr;', __('Next', 'Avada').'<span class="page-next"></span>', $pagination_links );
+
+	return $pagination_links;
+}
+
+add_filter( 'bbp_get_search_pagination_links', 'tf_get_search_pagination_links', 1 );
+function tf_get_search_pagination_links() {
+	$bbp = bbpress();
+
+	$pagination_links = $bbp->search_query->pagination_links;
+
+	$pagination_links = str_replace( 'page-numbers current', 'current', $pagination_links );
+	$pagination_links = str_replace( 'page-numbers', 'inactive', $pagination_links );
+	$pagination_links = str_replace( 'prev inactive', 'pagination-prev', $pagination_links );
+	$pagination_links = str_replace( 'next inactive', 'pagination-next', $pagination_links );
+
+	$pagination_links = str_replace( '&larr;', __('Previous', 'Avada').'<span class="page-prev"></span>', $pagination_links );
+	$pagination_links = str_replace( '&rarr;', __('Next', 'Avada').'<span class="page-next"></span>', $pagination_links );
+
+	return $pagination_links;
+}
+
+add_action( 'fusion_admin_save', 'fusion_add_dynamic_css_file' );
+function fusion_add_dynamic_css_file( $lang ) {
+
+    global $data, $woocommerce;
+
+    if( !$lang ) {
+        $lang = '';
+        if(defined('ICL_LANGUAGE_CODE')) {
+            global $sitepress;
+            if(ICL_LANGUAGE_CODE != 'en' && ICL_LANGUAGE_CODE != 'all') {
+                $lang = '_'.ICL_LANGUAGE_CODE;
+                if(!get_option($theme_name.'_options'.$lang)) {
+                    update_option($theme_name.'_options'.$lang, get_option($theme_name.'_options'));
+                }
+            } elseif( ICL_LANGUAGE_CODE == 'all' ) {
+                $lang = '_' . $sitepress->get_default_language();
+                if( $sitepress->get_default_language() == 'en' ) {
+                    $lang = '';
+                }
+            } else {
+                $lang = '';
+            }
+        }
+    }
+
+    $data = get_option( THEMENAME . '_options' . $lang );
+
+    $upload_dir = wp_upload_dir();
+    $filename = trailingslashit($upload_dir['basedir']) . 'avada' . $lang . '.css';
+
+    ob_start();
+    include get_template_directory() . '/framework/dynamic_css.php';
+    $dynamic_css = ob_get_contents();
+    ob_get_clean();
+
+    global $wp_filesystem;
+    if( empty( $wp_filesystem ) ) {
+        require_once( ABSPATH .'/wp-admin/includes/file.php' );
+        WP_Filesystem();
+    }
+
+    if( $wp_filesystem ) {
+        $wp_filesystem->put_contents(
+            $filename,
+            $dynamic_css,
+            FS_CHMOD_FILE // predefined mode settings for WP files
+        );
+    }
+
+}
+
+add_action( 'fusion_admin_save', 'fusion_add_dynamic_js_file' );
+function fusion_add_dynamic_js_file( $lang ) {
+
+    global $data, $woocommerce;
+
+    if( !$lang ) {
+        $lang = '';
+        if(defined('ICL_LANGUAGE_CODE')) {
+            global $sitepress;
+            if(ICL_LANGUAGE_CODE != 'en' && ICL_LANGUAGE_CODE != 'all') {
+                $lang = '_'.ICL_LANGUAGE_CODE;
+                if(!get_option($theme_name.'_options'.$lang)) {
+                    update_option($theme_name.'_options'.$lang, get_option($theme_name.'_options'));
+                }
+            } elseif( ICL_LANGUAGE_CODE == 'all' ) {
+                $lang = '_' . $sitepress->get_default_language();
+                if( $sitepress->get_default_language() == 'en' ) {
+                    $lang = '';
+                }
+            } else {
+                $lang = '';
+            }
+        }
+    }
+
+    $data = get_option( THEMENAME . '_options' . $lang );
+
+    $upload_dir = wp_upload_dir();
+    $filename = trailingslashit($upload_dir['basedir']) . 'avada' . $lang . '.js';
+
+    ob_start();
+    include get_template_directory() . '/framework/dynamic_js.php';
+    $dynamic_js = ob_get_contents();
+    ob_get_clean();
+
+    global $wp_filesystem;
+    if( empty( $wp_filesystem ) ) {
+        require_once( ABSPATH .'/wp-admin/includes/file.php' );
+        WP_Filesystem();
+    }
+
+    if( $wp_filesystem ) {
+        $wp_filesystem->put_contents(
+            $filename,
+            $dynamic_js,
+            FS_CHMOD_FILE // predefined mode settings for WP files
+        );
+    }
+
+}
+
+/* Add revslider styles */
+function avada_revslider_styles() {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'revslider_css';
+    if($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name && function_exists('rev_slider_shortcode') && !get_option('avada_revslider_css')) {
+        $styles = array(
+            '.avada_huge_white_text' => '{"position":"absolute","color":"#ffffff","font-size":"130px","line-height":"45px","font-family":"museoslab500regular"}',
+            '.avada_huge_black_text' => '{"position":"absolute","color":"#000000","font-size":"130px","line-height":"45px","font-family":"museoslab500regular;}',
+            '.avada_big_black_text' => '{"position":"absolute","color":"#333333","font-size":"42px","line-height":"45px","font-family":"museoslab500regular"}',
+            '.avada_big_white_text' => '{"position":"absolute","color":"#fff","font-size":"42px","line-height":"45px","font-family":"museoslab500regular"}',
+            '.avada_big_black_text_center' => '{"position":"absolute","color":"#333333","font-size":"38px","line-height":"45px","font-family":"museoslab500regular","text-align":"center"}',
+            '.avada_med_green_text' => '{"position":"absolute","color":"#A0CE4E","font-size":"24px","line-height":"24px","font-family":"PTSansRegular, Arial, Helvetica, sans-serif"}',
+            '.avada_small_gray_text' => '{"position":"absolute","color":"#747474","font-size":"13px","line-height":"20px","font-family":"PTSansRegular, Arial, Helvetica, sans-serif"}',
+            '.avada_small_white_text' => '{"position":"absolute","color":"#fff","font-size":"13px","line-height":"20px","font-family":"PTSansRegular, Arial, Helvetica, sans-serif","text-shadow":"0px 2px 5px rgba(0, 0, 0, 0.5)","font-weight":"700"}',
+            '.avada_block_black' => '{"position":"absolute","color":"#A0CE4E","text-shadow":"none","font-size":"22px","line-height":"34px","padding":"0px 10px","padding-top":"1px","margin":"0px","border-width":"0px","border-style":"none","background-color":"#000","font-family":"PTSansRegular, Arial, Helvetica, sans-serif"}',
+            '.avada_block_green' => '{"position":"absolute","color":"#000","text-shadow":"none","font-size":"22px","line-height":"34px","padding":"0px 10px","padding-top":"1px","margin":"0px","border-width":"0px","border-style":"none","background-color":"#A0CE4E","font-family":"PTSansRegular, Arial, Helvetica, sans-serif"}',
+            '.avada_block_white' => '{"position":"absolute","color":"#fff","text-shadow":"none","font-size":"22px","line-height":"34px","padding":"0px 10px","padding-top":"1px","margin":"0px","border-width":"0px","border-style":"none","background-color":"#000","font-family":"PTSansRegular, Arial, Helvetica, sans-serif"}',
+            '.avada_block_white_trans' => '{"position":"absolute","color":"#fff","text-shadow":"none","font-size":"22px","line-height":"34px","padding":"0px 10px","padding-top":"1px","margin":"0px","border-width":"0px","border-style":"none","background-color":"rgba(0, 0, 0, 0.6)","font-family":"PTSansRegular, Arial, Helvetica, sans-serif"}',
+        );
+
+        foreach($styles as $handle => $params) {
+            $test = $wpdb->get_var($wpdb->prepare('SELECT handle FROM ' . $table_name . ' WHERE handle = %s', $handle));
+
+            if($test != $handle) {
+                $wpdb->replace(
+                    $table_name,
+                    array(
+                        'handle' => $handle,
+                        'params' => $params,
+                    ),
+                    array(
+                        '%s',
+                        '%s',
+                    )
+                );
+            }
+        }
+
+        update_option('avada_revslider_css', true);
+    }
+}
+avada_revslider_styles();

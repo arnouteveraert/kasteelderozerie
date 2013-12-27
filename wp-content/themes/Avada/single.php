@@ -1,5 +1,7 @@
 <?php get_header(); ?>
 	<?php
+	$content_css = '';
+	$sidebar_css = '';
 	if(get_post_meta($post->ID, 'pyre_full_width', true) == 'yes') {
 		$content_css = 'width:100%';
 		$sidebar_css = 'display:none';
@@ -20,10 +22,10 @@
 		}
 	}
 	?>
-	<div id="content" style="<?php echo $content_css; ?>">
+	<div id="content" class="<?php echo $content_class; ?>" style="<?php echo $content_css; ?>">
 		<?php wp_reset_query(); ?>
 		<?php $paged = (get_query_var('paged')) ? get_query_var('paged') : 1; ?>
-		<?php query_posts($query_string.'&paged='.$paged); ?>
+		<?php //query_posts($query_string.'&paged='.$paged); ?>
 		<?php if(!$data['blog_pn_nav']): ?>
 		<div class="single-navigation clearfix">
 			<?php previous_post_link('%link', __('Previous', 'Avada')); ?>
@@ -60,9 +62,27 @@
 			?>
 			<div class="flexslider post-slideshow">
 				<ul class="slides">
+					<?php if(!$data['posts_slideshow']): ?>
 					<?php if(get_post_meta($post->ID, 'pyre_video', true)): ?>
-					<li class="full-video">
-						<?php echo get_post_meta($post->ID, 'pyre_video', true); ?>
+					<li>
+						<div class="full-video">
+							<?php echo get_post_meta($post->ID, 'pyre_video', true); ?>
+						</div>
+					</li>
+					<?php elseif(has_post_thumbnail() ): ?>
+					<?php $attachment_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full'); ?>
+					<?php $full_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full'); ?>
+					<?php $attachment_data = wp_get_attachment_metadata(get_post_thumbnail_id()); ?>
+					<li>
+						<a href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php the_ID(); ?>]" title="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id()); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo get_post_meta(get_post_thumbnail_id(), '_wp_attachment_image_alt', true); ?>" /></a>
+					</li>
+					<?php endif; ?>
+					<?php else: ?>
+					<?php if(get_post_meta($post->ID, 'pyre_video', true)): ?>
+					<li>
+						<div class="full-video">
+							<?php echo get_post_meta($post->ID, 'pyre_video', true); ?>
+						</div>
 					</li>
 					<?php endif; ?>
 					<?php if(has_post_thumbnail() && !get_post_meta($post->ID, 'pyre_video', true)): ?>
@@ -70,16 +90,15 @@
 					<?php $full_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full'); ?>
 					<?php $attachment_data = wp_get_attachment_metadata(get_post_thumbnail_id()); ?>
 					<li>
-						<a href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php the_ID(); ?>]" title="<?php echo get_post_field('post_content', get_post_thumbnail_id()); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id()); ?>" /></a>
+						<a href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php the_ID(); ?>]" title="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id()); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo get_post_meta(get_post_thumbnail_id(), '_wp_attachment_image_alt', true); ?>" /></a>
 					</li>
 					<?php endif; ?>
-					<?php if($data['posts_slideshow']): ?>
 					<?php foreach($attachments as $attachment): ?>
 					<?php $attachment_image = wp_get_attachment_image_src($attachment->ID, 'full'); ?>
 					<?php $full_image = wp_get_attachment_image_src($attachment->ID, 'full'); ?>
 					<?php $attachment_data = wp_get_attachment_metadata($attachment->ID); ?>
 					<li>
-						<a href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php the_ID(); ?>]" title="<?php echo get_post_field('post_content', $attachment->ID); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo get_post_field('post_content', $attachment->ID); ?>" /></a>
+						<a href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php the_ID(); ?>]" title="<?php echo get_post_field('post_excerpt', $attachment->ID); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo get_post_meta($attachment->ID, '_wp_attachment_image_alt', true); ?>" /></a>
 					</li>
 					<?php endforeach; ?>
 					<?php endif; ?>
@@ -92,20 +111,37 @@
 			?>
 			<div class="flexslider post-slideshow">
 				<ul class="slides">
+					<?php if(!$data['posts_slideshow']): ?>
 					<?php if(get_post_meta($post->ID, 'pyre_video', true)): ?>
-					<li class="full-video">
-						<?php echo get_post_meta($post->ID, 'pyre_video', true); ?>
+					<li>
+						<div class="full-video">
+							<?php echo get_post_meta($post->ID, 'pyre_video', true); ?>
+						</div>
 					</li>
-					<?php endif; ?>
-					<?php if(has_post_thumbnail() && !get_post_meta($post->ID, 'pyre_video', true)): ?>
+					<?php elseif(has_post_thumbnail() ): ?>
 					<?php $attachment_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full'); ?>
 					<?php $full_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full'); ?>
 					<?php $attachment_data = wp_get_attachment_metadata(get_post_thumbnail_id()); ?>
 					<li>
-						<a href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php the_ID(); ?>]" title="<?php echo get_post_field('post_content', get_post_thumbnail_id()); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id()); ?>" /></a>
+						<a href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php the_ID(); ?>]" title="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id()); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo get_post_meta(get_post_thumbnail_id(), '_wp_attachment_image_alt', true); ?>" /></a>
 					</li>
 					<?php endif; ?>
-					<?php if($data['posts_slideshow']): ?>
+					<?php else: ?>
+					<?php if(get_post_meta($post->ID, 'pyre_video', true)): ?>
+					<li>
+						<div class="full-video">
+							<?php echo get_post_meta($post->ID, 'pyre_video', true); ?>
+						</div>
+					</li>
+					<?php endif; ?>
+					<?php if(has_post_thumbnail() ): ?>
+					<?php $attachment_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full'); ?>
+					<?php $full_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full'); ?>
+					<?php $attachment_data = wp_get_attachment_metadata(get_post_thumbnail_id()); ?>
+					<li>
+						<a href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php the_ID(); ?>]" title="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id()); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo get_post_meta(get_post_thumbnail_id(), '_wp_attachment_image_alt', true); ?>" /></a>
+					</li>
+					<?php endif; ?>
 					<?php
 					$i = 2;
 					while($i <= $data['posts_slideshow_number']):
@@ -116,7 +152,7 @@
 					<?php $full_image = wp_get_attachment_image_src($attachment_new_id, 'full'); ?>
 					<?php $attachment_data = wp_get_attachment_metadata($attachment_new_id); ?>
 					<li>
-						<a href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php the_ID(); ?>]" title="<?php echo get_post_field('post_content', $attachment_new_id); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo get_post_field('post_content', $attachment_new_id); ?>" /></a>
+						<a href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php the_ID(); ?>]" title="<?php echo get_post_field('post_excerpt', $attachment_new_id); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo get_post_meta($attachment_new_id, '_wp_attachment_image_alt', true); ?>" /></a>
 					</li>
 					<?php endif; $i++; endwhile; ?>
 					<?php endif; ?>
@@ -125,6 +161,7 @@
 			<?php endif; ?>
 			<?php endif; ?>
 			<?php endif; ?>
+			<?php wp_reset_query(); ?>
 			<?php if($data['blog_post_title']): ?>
 			<h2 class="entry-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
 			<?php endif; ?>
@@ -134,18 +171,22 @@
 			</div>
 			<?php if($data['post_meta']): ?>
 			<div class="meta-info">
-				<div class="alignleft">
-					<?php if(!$data['post_meta_author']): ?><span class="vcard author"><?php echo __('By', 'Avada'); ?> <?php the_author_posts_link(); ?></span><span class="sep">|</span><?php endif; ?><?php if(!$data['post_meta_date']): ?><?php the_time($data['date_format']); ?><span class="sep">|</span><?php endif; ?><?php if(!$data['post_meta_cats']): ?><?php the_category(', '); ?><span class="sep">|</span><?php endif; ?><?php if(!$data['post_meta_comments']): ?><?php comments_popup_link(__('0 Comments', 'Avada'), __('1 Comment', 'Avada'), '% '.__('Comments', 'Avada')); ?><?php endif; ?>
+				<div class="alignleft vcard">
+					<?php if(!$data['post_meta_author']): ?><span class="fn"><?php echo __('By', 'Avada'); ?> <?php the_author_posts_link(); ?></span><span class="sep">|</span><?php endif; ?><?php if(!$data['post_meta_date']): ?><span class="updated"><?php the_time($data['date_format']); ?></span><span class="sep">|</span><?php endif; ?><?php if(!$data['post_meta_cats']): ?><?php the_category(', '); ?><span class="sep">|</span><?php endif; ?><?php if(!$data['post_meta_comments']): ?><?php comments_popup_link(__('0 Comments', 'Avada'), __('1 Comment', 'Avada'), '% '.__('Comments', 'Avada')); ?><?php endif; ?>
 				</div>
 			</div>
 			<?php endif; ?>
 			<?php if($data['social_sharing_box']): ?>
+			<?php $nofollow = '';
+			if($data['nofollow_social_links']) {
+				$nofollow = ' rel="nofollow"';
+			} ?>
 			<div class="share-box">
 				<h4><?php echo __('Share This Story, Choose Your Platform!', 'Avada'); ?></h4>
 				<ul class="social-networks social-networks-<?php echo strtolower($data['socialbox_icons_color']); ?>">
 					<?php if($data['sharing_facebook']): ?>
 					<li class="facebook">
-						<a href="http://www.facebook.com/sharer.php?u=<?php the_permalink(); ?>&amp;t=<?php the_title(); ?>">
+						<a href="http://www.facebook.com/sharer.php?s=100&p&#91;url&#93;=<?php the_permalink(); ?>&p&#91;title&#93;=<?php the_title(); ?>"	target="_blank"<?php echo $nofollow; ?>>
 							Facebook
 						</a>
 						<div class="popup">
@@ -157,7 +198,7 @@
 					<?php endif; ?>
 					<?php if($data['sharing_twitter']): ?>
 					<li class="twitter">
-						<a href="http://twitter.com/home?status=<?php the_title(); ?> <?php the_permalink(); ?>">
+						<a href="http://twitter.com/home?status=<?php the_title(); ?> <?php the_permalink(); ?>" target="_blank"<?php echo $nofollow; ?>>
 							Twitter
 						</a>
 						<div class="popup">
@@ -169,7 +210,7 @@
 					<?php endif; ?>
 					<?php if($data['sharing_linkedin']): ?>
 					<li class="linkedin">
-						<a href="http://linkedin.com/shareArticle?mini=true&amp;url=<?php the_permalink(); ?>&amp;title=<?php the_title(); ?>">
+						<a href="http://linkedin.com/shareArticle?mini=true&amp;url=<?php the_permalink(); ?>&amp;title=<?php the_title(); ?>" target="_blank"<?php echo $nofollow; ?>>
 							LinkedIn
 						</a>
 						<div class="popup">
@@ -181,7 +222,7 @@
 					<?php endif; ?>
 					<?php if($data['sharing_reddit']): ?>
 					<li class="reddit">
-						<a href="http://reddit.com/submit?url=<?php the_permalink(); ?>&amp;title=<?php the_title(); ?>">
+						<a href="http://reddit.com/submit?url=<?php the_permalink(); ?>&amp;title=<?php the_title(); ?>" target="_blank"<?php echo $nofollow; ?>>
 							Reddit
 						</a>
 						<div class="popup">
@@ -193,7 +234,7 @@
 					<?php endif; ?>
 					<?php if($data['sharing_tumblr']): ?>
 					<li class="tumblr">
-						<a href="http://www.tumblr.com/share/link?url=<?php echo urlencode(get_permalink()); ?>&amp;name=<?php echo urlencode($post->post_title); ?>&amp;description=<?php echo urlencode(get_the_excerpt()); ?>">
+						<a href="http://www.tumblr.com/share/link?url=<?php echo urlencode(get_permalink()); ?>&amp;name=<?php echo urlencode($post->post_title); ?>&amp;description=<?php echo urlencode(get_the_excerpt()); ?>" target="_blank"<?php echo $nofollow; ?>>
 							Tumblr
 						</a>
 						<div class="popup">
@@ -206,7 +247,7 @@
 					<?php if($data['sharing_google']): ?>
 					<li class="google">
 						<a href="https://plus.google.com/share?url=<?php the_permalink(); ?>" onclick="javascript:window.open(this.href,
-  '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;">
+  '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;" target="_blank"<?php echo $nofollow; ?>>
 							Google +1
 						</a>
 						<div class="popup">
@@ -219,7 +260,7 @@
 					<?php if($data['sharing_pinterest']): ?>
 					<li class="pinterest">
 						<?php $full_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full'); ?>
-						<a href="http://pinterest.com/pin/create/button/?url=<?php echo urlencode(get_permalink()); ?>&amp;description=<?php echo urlencode($post->post_title); ?>&amp;media=<?php echo urlencode($full_image[0]); ?>">
+						<a href="http://pinterest.com/pin/create/button/?url=<?php echo urlencode(get_permalink()); ?>&amp;description=<?php echo urlencode($post->post_title); ?>&amp;media=<?php echo urlencode($full_image[0]); ?>" target="_blank"<?php echo $nofollow; ?>>
 							Pinterest
 						</a>
 						<div class="popup">
@@ -259,7 +300,7 @@
 			<?php endif; ?>
 
 			<?php if($data['related_posts']): ?>
-			<?php $related = get_related_posts($post->ID); ?>
+			<?php $related = get_related_posts($post->ID, $data['number_related_posts']); ?>
 			<?php if($related->have_posts() && get_post_meta($post->ID, 'pyre_related_posts', true) != 'no'): ?>
 			<div class="related-posts single-related-posts">
 				<div class="title"><h2><?php echo __('Related Posts', 'Avada'); ?></h2><div class="title-sep-container"><div class="title-sep"></div></div></div>
@@ -269,11 +310,11 @@
 							<?php while($related->have_posts()): $related->the_post(); ?>
 							<?php if(has_post_thumbnail()): ?>
 							<li>
-								<div class="image">
+								<div class="image" aria-haspopup="true">
 										<?php if($data['image_rollover']): ?>
 										<?php the_post_thumbnail('related-img'); ?>
 										<?php else: ?>
-										<a href="<?php the_permalink(); ?>"><?php the_post_thumbnail('related-img'); ?></a>
+										<a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_post_thumbnail('related-img'); ?></a>
 										<?php endif; ?>
 										<?php
 										if(get_post_meta($post->ID, 'pyre_image_rollover_icons', true) == 'link') {

@@ -47,10 +47,7 @@ class Options_Machine {
 		
 		if($options):
 		foreach ($options as $value) {
-		
-			$counter++;
-			$val = '';
-			
+
 			//create array of defaults		
 			if ($value['type'] == 'multicheck'){
 				if (is_array($value['std'])){
@@ -63,6 +60,17 @@ class Options_Machine {
 			} else {
 				if (isset($value['id'])) $defaults[$value['id']] = $value['std'];
 			}
+
+		}
+
+		if( ! $data ) {
+			$data = $defaults;
+		}
+
+		foreach ($options as $value) {
+		
+			$counter++;
+			$val = '';
 			
 			//Start Heading
 			 if ( $value['type'] != "heading" )
@@ -95,7 +103,7 @@ class Options_Machine {
 				//text input
 				case 'text':
 					$t_value = '';
-					$t_value = stripslashes($data[$value['id']]);
+					$t_value = $data[$value['id']];
 					
 					$mini ='';
 					if(!isset($value['mod'])) $value['mod'] = '';
@@ -333,13 +341,19 @@ class Options_Machine {
 					$info_text = $value['std'];
 					$output .= '<div class="of-info">'.$info_text.'</div>';
 				break;
-				
+
 				//display a single image
 				case "image":
 					$src = $value['std'];
 					$output .= '<img src="'.$src.'">';
 				break;
 				
+				//display a button with url
+				case "button":
+					$src = $value['std'];
+					$output .= '<a href="' . $src . '" class="button-primary">' . $value['btntext'] . '</a>';
+				break;
+
 				//tab heading
 				case 'heading':
 					if($counter >= 2){
@@ -361,6 +375,9 @@ class Options_Machine {
 					if(isset($data[$value['id']])):
 					$slides = $data[$value['id']];
 					endif;
+					if(!isset($slides)) {
+						$slides = array();
+					}
 					$count = count($slides);
 					if ($count < 2) {
 						$oldorder = 1;
@@ -622,7 +639,7 @@ class Options_Machine {
 		$slider .= '<div class="slide_body">';
 		
 		$slider .= '<label>Title</label>';
-		$slider .= '<input class="slide of-input of-slider-title" name="'. $id .'['.$order.'][title]" id="'. $id .'_'.$order .'_slide_title" value="'. stripslashes($val['title']) .'" />';
+		$slider .= '<input class="slide of-input of-slider-title" name="'. $id .'['.$order.'][title]" id="'. $id .'_'.$order .'_slide_title" value="'. $val['title'] .'" />';
 		
 		$slider .= '<label>Image URL</label>';
 		$slider .= '<input class="slide of-input" name="'. $id .'['.$order.'][url]" id="'. $id .'_'.$order .'_slide_url" value="'. $val['url'] .'" />';
@@ -645,7 +662,7 @@ class Options_Machine {
 		$slider .= '<input class="slide of-input" name="'. $id .'['.$order.'][link]" id="'. $id .'_'.$order .'_slide_link" value="'. $val['link'] .'" />';
 		
 		$slider .= '<label>Video Embed Code (optional)</label>';
-		$slider .= '<textarea class="slide of-input" name="'. $id .'['.$order.'][description]" id="'. $id .'_'.$order .'_slide_description" cols="8" rows="8">'.stripslashes($val['description']).'</textarea>';
+		$slider .= '<textarea class="slide of-input" name="'. $id .'['.$order.'][description]" id="'. $id .'_'.$order .'_slide_description" cols="8" rows="8">'.$val['description'].'</textarea>';
 	
 		$slider .= '<a class="slide_delete_button" href="#">Delete</a>';
 	    $slider .= '<div class="clear"></div>' . "\n";

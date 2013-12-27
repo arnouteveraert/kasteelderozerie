@@ -219,19 +219,7 @@ var LayerSlider = {
 
 		// Generate preview
 		LayerSlider.generatePreview(index);
-
-		if(typeof jQuery.fn.wpColorPicker != "undefined") {
-
-			clone.find('.ls-colorpicker').wpColorPicker({
-				width : 150,
-				change : function() {
-					LayerSlider.willGeneratePreview( jQuery('.ls-box.active').index() );
-				},
-				clear : function() {
-					LayerSlider.willGeneratePreview( jQuery('.ls-box.active').index() );
-				}
-			});
-		}
+		LayerSlider.addColorPicker( clone.find('.ls-colorpicker') );
 	},
 
 	removeLayer : function(el) {
@@ -311,24 +299,8 @@ var LayerSlider = {
 
 
 		// Color picker
-		if(typeof jQuery.fn.wpColorPicker != "undefined") {
-
-			// Re-init color picker
-			clone.find('.ls-colorpicker').each(function() {
-				jQuery(this).appendTo( jQuery(this).closest('td') );
-				jQuery(this).closest('td').find('.wp-picker-container').remove();
-			});
-
-			jQuery(clone).find('.ls-colorpicker').wpColorPicker({
-				width : 150,
-				change : function() {
-					LayerSlider.willGeneratePreview( jQuery('.ls-box.active').index() );
-				},
-				clear : function() {
-					LayerSlider.willGeneratePreview( jQuery('.ls-box.active').index() );
-				}
-			});
-		}
+		clone.find('.ls-colorpicker').minicolors('destroy');
+		LayerSlider.addColorPicker( clone.find('.ls-colorpicker') );
 	},
 
 	addSublayer : function(el) {
@@ -348,19 +320,7 @@ var LayerSlider = {
 
 		// Open it
 		clone.click();
-
-		if(typeof jQuery.fn.wpColorPicker != "undefined") {
-
-			clone.find('.ls-colorpicker').wpColorPicker({
-				width : 150,
-				change : function() {
-					LayerSlider.willGeneratePreview( jQuery('.ls-box.active').index() );
-				},
-				clear : function() {
-					LayerSlider.willGeneratePreview( jQuery('.ls-box.active').index() );
-				}
-			});
-		}
+		LayerSlider.addColorPicker( clone.find('.ls-colorpicker') );
 	},
 
 	selectSubLayer : function(el) {
@@ -468,6 +428,17 @@ var LayerSlider = {
 		LayerSlider.generatePreview( jQuery('.ls-box.active').index() );
 	},
 
+	addColorPicker : function(el) {
+		jQuery(el).minicolors({
+			opacity: true,
+			changeDelay : 100,
+			position: 'bottom right',
+			change : function(hex, opacity) {
+				LayerSlider.willGeneratePreview( jQuery('.ls-box.active').index() );
+			}
+		});
+	},
+
 	duplicateSublayer : function(el) {
 
 		// Clone fix
@@ -490,24 +461,8 @@ var LayerSlider = {
 		LayerSlider.generatePreview( jQuery(el).closest('.ls-layer-box').index() );
 
 		// Color picker
-		if(typeof jQuery.fn.wpColorPicker != "undefined") {
-
-			// Re-init color picker
-			clone.find('.ls-colorpicker').each(function() {
-				jQuery(this).appendTo( jQuery(this).closest('td') );
-				jQuery(this).closest('td').find('.wp-picker-container').remove();
-			});
-
-			jQuery(clone).find('.ls-colorpicker').wpColorPicker({
-				width : 150,
-				change : function() {
-					LayerSlider.willGeneratePreview( jQuery('.ls-box.active').index() );
-				},
-				clear : function() {
-					LayerSlider.willGeneratePreview( jQuery('.ls-box.active').index() );
-				}
-			});
-		}
+		clone.find('.ls-colorpicker').minicolors('destroy');
+		LayerSlider.addColorPicker( clone.find('.ls-colorpicker') );
 	},
 
 	skipSublayer : function(el) {
@@ -601,6 +556,7 @@ var LayerSlider = {
 		// Get sizes
 		var width = jQuery('.ls-settings input[name="width"]').val();
 		var height = jQuery('.ls-settings input[name="height"]').val();
+			height = (height.indexOf('%') != -1) ? 400 : height;
 		var sub_container = jQuery('.ls-settings input[name="sublayercontainer"]').val();
 
 		// Which width?
@@ -1005,7 +961,7 @@ var LayerSlider = {
             },
             containment : 'parent',
 			tolerance : 'pointer',
-			cancel : '.ls-sublayer-pages'
+			cancel : '.ls-sublayer-pages, input.ls-sublayer-title'
         });
 	},
 
@@ -1680,7 +1636,8 @@ var LayerSlider = {
 				$data = $data.add( jQuery('.ls-callback-page textarea') );
 
 				// Post layer
-				jQuery.ajax(jQuery(el).attr('action'), {
+				jQuery.ajax({
+					url : jQuery(el).attr('action'),
 					type : 'POST',
 					data : $data.serialize(),
 					async : false,
@@ -1762,6 +1719,20 @@ var LayerSlider = {
 };
 
 jQuery(document).ready(function() {
+
+	// Global
+
+		// Tooltips
+		if(lsScreenOptions['showTooltips'] == 'true') {
+			lsTooltip.init();
+		}
+
+		// Screen options
+		jQuery('#ls-screen-options').children().first().appendTo('#screen-meta');
+		jQuery('#ls-screen-options').children().last().appendTo('#screen-meta-links');
+
+		// Screen option actions
+		lsScreenOptionsActions.init();
 
 	// List view
 	if(
@@ -1851,30 +1822,10 @@ jQuery(document).ready(function() {
 			}
 		});
 
-	// Skin editor
+	// Transition builder
 	} else if(document.location.href.indexOf('layerslider_transition_builder') != -1) {
 
-		// Tooltips
-		if(lsScreenOptions['showTooltips'] == 'true') {
-			lsTooltip.init();
-		}
-
-		// Screen options
-		jQuery('#ls-screen-options').children().first().appendTo('#screen-meta');
-		jQuery('#ls-screen-options').children().last().appendTo('#screen-meta-links');
-
-		// Screen option actions
-		lsScreenOptionsActions.init();
-
-	// Editor view
 	} else {
-
-		// Screen options
-		jQuery('#ls-screen-options').children().first().appendTo('#screen-meta');
-		jQuery('#ls-screen-options').children().last().appendTo('#screen-meta-links');
-
-		// Screen option actions
-		lsScreenOptionsActions.init();
 
 		// Main tab bar page select
 		jQuery('#ls-main-nav-bar a:not(.unselectable)').click(function(e) {
@@ -1918,10 +1869,6 @@ jQuery(document).ready(function() {
 			jQuery(document).trigger( jQuery.Event('click', { target : el } ) );
 
 		});
-
-		if(lsScreenOptions['showTooltips'] == 'true') {
-			lsTooltip.init();
-		}
 
 		// Generate preview
 		jQuery(window).load(function() {
@@ -2123,18 +2070,8 @@ jQuery(document).ready(function() {
 			LayerSlider.setCallbackBoxesWidth();
 		});
 
-		// Color picker
-		if(typeof jQuery.fn.wpColorPicker != "undefined") {
-			jQuery('#ls-slider-form .ls-colorpicker').wpColorPicker({
-				width : 150,
-				change : function() {
-					LayerSlider.willGeneratePreview( jQuery('.ls-box.active').index() );
-				},
-				clear : function() {
-					LayerSlider.willGeneratePreview( jQuery('.ls-box.active').index() );
-				}
-			});
-		}
+		// Add color picker
+		LayerSlider.addColorPicker( jQuery('#ls-slider-form input.ls-colorpicker') );
 
 		// Show color picker on focus
 		jQuery('.color').focus(function() {

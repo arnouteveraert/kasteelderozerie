@@ -1,5 +1,8 @@
 <?php get_header(); ?>
+	<?php $wp_query = $backup_wp_query; ?>
 	<?php
+	$content_css = '';
+	$sidebar_css = '';
 	if(get_post_meta($post->ID, 'pyre_full_width', true) == 'yes') {
 		$content_css = 'width:100%';
 		$sidebar_css = 'display:none';
@@ -20,15 +23,26 @@
 		}
 	}
 	if(class_exists('Woocommerce')) {
-		if(is_cart() || is_checkout() || is_account_page() || is_page(get_option('woocommerce_thanks_page_id'))) {
+		if(is_cart() || is_checkout() || is_account_page() || (get_option('woocommerce_thanks_page_id') && is_page(get_option('woocommerce_thanks_page_id')))) {
 			$content_css = 'width:100%';
 			$sidebar_css = 'display:none';
 		}
 	}
 	?>
 	<div id="content" style="<?php echo $content_css; ?>">
-		<?php if(have_posts()): the_post(); ?>
+		<?php
+		global $query_string;
+		query_posts($query_string);
+		
+		if(function_exists('barley_wrap_the_title') && current_user_can('edit_post') && is_page()):
+			$wp_query = $backup_wp_query;
+		endif;
+
+		if(have_posts()): the_post();
+		?>
 		<div id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+			<span class="entry-title" style="display: none;"><?php the_title(); ?></span>
+			<span class="vcard" style="display: none;"><span class="fn"><?php the_author_posts_link(); ?></span></span>
 			<?php global $data; if(!$data['featured_images_pages'] && has_post_thumbnail()): ?>
 			<div class="image">
 				<?php the_post_thumbnail('blog-large'); ?>

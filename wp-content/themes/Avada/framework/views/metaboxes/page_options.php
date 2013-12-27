@@ -24,7 +24,7 @@ foreach($sliders as $key => $item):
 endforeach;
 endif;
 
-if($slides){
+if(isset($slides) && $slides){
 foreach($slides as $key => $val){
 	$slides_array[$key] = 'LayerSlider #'.($key);
 }
@@ -69,11 +69,13 @@ $this->select(	'flexslider',
 ?>
 <?php
 global $wpdb;
-$get_sliders = $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.'revslider_sliders');
 $revsliders[0] = 'Select a slider';
-if($get_sliders) {
-	foreach($get_sliders as $slider) {
-		$revsliders[$slider->alias] = $slider->title;
+if(function_exists('rev_slider_shortcode')) {
+	$get_sliders = $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.'revslider_sliders');
+	if($get_sliders) {
+		foreach($get_sliders as $slider) {
+			$revsliders[$slider->alias] = $slider->title;
+		}
 	}
 }
 $this->select(	'revslider',
@@ -112,6 +114,24 @@ $this->select(	'sidebar_position',
 				'Page: Sidebar Position',
 				array('default' => 'Default', 'right' => 'Right', 'left' => 'Left'),
 				''
+			);
+?>
+<?php
+$this->text(	'main_top_padding',
+				'Page Content Top Padding',
+				'In pixels ex: 20px. Leave empty for default value.'
+			);
+?>
+<?php
+$this->text(	'main_bottom_padding',
+				'Page Content Bottom Padding',
+				'In pixels ex: 20px. Leave empty for default value.'
+			);
+?>
+<?php
+$this->text(	'hundredp_padding',
+				'100% Width Template Left/Right Padding',
+				'In pixels ex: 20px. Leave empty for default value.'
 			);
 ?>
 <h2>Portfolio options:</h2>
@@ -164,7 +184,7 @@ $this->select(	'page_bg_layout',
 			);
 ?>
 <h2>Following options only work in boxed mode:</h2>
-<?php $this->upload('page_bg', 'Background Image'); ?>
+<?php $this->upload('page_bg', 'Background Image for Outer Area'); ?>
 <?php
 $this->text(	'page_bg_color',
 				'Background Color (Hex Code)',
@@ -186,7 +206,7 @@ $this->select(	'page_bg_repeat',
 			);
 ?>
 <h2>Following options work in boxed and wide mode:</h2>
-<?php $this->upload('wide_page_bg', 'Background Image'); ?>
+<?php $this->upload('wide_page_bg', 'Background Image for Main Content Area'); ?>
 <?php
 $this->text(	'wide_page_bg_color',
 				'Background Color (Hex Code)',
@@ -244,6 +264,25 @@ $this->select(	'page_title_text',
 				''
 			);
 ?>
+<?php
+$this->text(	'page_title_custom_text',
+				'Page Title Bar Custom Text',
+				''
+			);
+?>
+<?php
+$this->text(	'page_title_custom_subheader',
+				'Page Title Bar Custom Subheader Text',
+				''
+			);
+?>
+<?php
+$this->text(	'page_title_height',
+				'Page Title Bar Height (in pixels "px")',
+				''
+			);
+?>
+
 <?php $this->upload('page_title_bar_bg', 'Page Title Bar Background'); ?>
 <?php $this->upload('page_title_bar_bg_retina', 'Page Title Bar Background Retina'); ?>
 <?php
@@ -255,22 +294,15 @@ $this->text(	'page_title_bar_bg_color',
 <?php
 $this->select(	'page_title_bar_bg_full',
 				'100% Background Image',
-				array('no' => 'No', 'yes' => 'Yes'),
-				''
-			);
-?>
-<h2>Rollover options:</h2>
-<?php
-$this->select(	'image_rollover_icons',
-				'Image Rollover Icons',
-				array('linkzoom' => 'Link + Zoom', 'link' => 'Link', 'zoom' => 'Zoom', 'no' => 'No Icons'),
+				array('default' => 'Default', 'no' => 'No', 'yes' => 'Yes'),
 				''
 			);
 ?>
 <?php
-$this->text(	'link_icon_url',
-				'Link Icon URL',
-				'Leave blank for post URL'
+$this->select(	'page_title_bg_parallax',
+				'Parallax Background Image',
+				array('default' => 'Default', 'no' => 'No', 'yes' => 'Yes'),
+				''
 			);
 ?>
 </div>

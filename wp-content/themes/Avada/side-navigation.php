@@ -25,6 +25,8 @@ get_header(); ?>
 	<div id="content" style="<?php echo $content_css; ?>">
 		<?php while(have_posts()): the_post(); ?>
 		<div id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+			<span class="entry-title" style="display: none;"><?php the_title(); ?></span>
+			<span class="vcard" style="display: none;"><span class="fn"><?php the_author_posts_link(); ?></span></span>
 			<?php global $data; if(!$data['featured_images_pages'] && has_post_thumbnail()): ?>
 			<div class="image">
 				<?php the_post_thumbnail('blog-large'); ?>
@@ -50,7 +52,7 @@ get_header(); ?>
 			$post_parent = end($post_ancestors);
 			?>
 			<?php if(is_page($post_parent)): ?><?php endif; ?>
-			<li <?php if(is_page($post_parent)): ?>class="current_page_item"<?php endif; ?>><a href="<?php echo get_permalink($post_parent); ?>" title="Back to Parent Page"><?php echo get_the_title($post_parent); ?></a></li>
+			<li <?php if(is_page($post_parent)): ?>class="current_page_item"<?php endif; ?>><a href="<?php echo get_permalink($post_parent); ?>" title="<?php echo __('Back to Parent Page', 'Avada'); ?>"><?php echo get_the_title($post_parent); ?></a></li>
 			<?php
 			if($post_parent) {
 				$children = wp_list_pages("title_li=&child_of=".$post_parent."&echo=0");

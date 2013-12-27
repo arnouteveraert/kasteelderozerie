@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 global $product;
 ?>
-<li <?php post_class( $classes ); ?>>
+<li <?php post_class(); ?>>
 
 	<?php do_action( 'woocommerce_before_shop_loop_item' ); ?>
 

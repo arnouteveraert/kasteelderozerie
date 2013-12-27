@@ -6,31 +6,38 @@ if($data['portfolio_archive_layout'] == 'Portfolio Two Column') {
 	$portfolio_layout = 'portfolio-two';
 	$portfolio_image = 'portfolio-two';
 	$portfolio_content = false;
+	$content_class = 'portfolio-two-sidebar';
 } elseif($data['portfolio_archive_layout'] == 'Portfolio Three Column') {
 	$portfolio_layout = 'portfolio-three';
 	$portfolio_image = 'portfolio-three';
 	$portfolio_content = false;
+	$content_class = 'portfolio-three-sidebar';
 } elseif($data['portfolio_archive_layout'] == 'Portfolio Four Column') {
 	$portfolio_layout = 'portfolio-four';
 	$portfolio_image = 'portfolio-four';
 	$portfolio_content = false;
+	$content_class = 'portfolio-four-sidebar';
 } elseif($data['portfolio_archive_layout'] == 'Portfolio One Column Text') {
 	$portfolio_layout = 'portfolio-one portfolio-one-text';
-	$portfolio_image = 'portfolio-one';
+	$portfolio_image = 'portfolio-full';
 	$portfolio_content = true;
 	$portfolio_sep = true;
+	$content_class = 'portfolio-one-sidebar';
 } elseif($data['portfolio_archive_layout'] == 'Portfolio Two Column Text') {
 	$portfolio_layout = 'portfolio-two portfolio-two-text';
 	$portfolio_image = 'portfolio-two';
 	$portfolio_content = true;
+	$content_class = 'portfolio-two-sidebar';
 } elseif($data['portfolio_archive_layout'] == 'Portfolio Three Column Text') {
 	$portfolio_layout = 'portfolio-three portfolio-three-text';
 	$portfolio_image = 'portfolio-three';
 	$portfolio_content = true;
+	$content_class = 'portfolio-three-sidebar';
 } elseif($data['portfolio_archive_layout'] == 'Portfolio Four Column Text') {
 	$portfolio_layout = 'portfolio-four portfolio-four-text';
 	$portfolio_image = 'portfolio-four';
 	$portfolio_content = true;
+	$content_class = 'portfolio-four-sidebar';
 } elseif($data['portfolio_archive_layout'] == 'Portfolio Grid') {
 	$portfolio_layout = 'portfolio-masonry';
 	$portfolio_image = 'full';
@@ -43,9 +50,27 @@ if($data['portfolio_archive_layout'] == 'Portfolio Two Column') {
 	$portfolio_image = 'portfolio-one';
 	$portfolio_content = true;
 	$portfolio_sep = true;
+	$content_class = 'portfolio-one-sidebar';
+}
+
+if($data['portfolio_archive_sidebar'] == 'None') {
+	$content_css = 'width:100%';
+	$sidebar_css = 'display:none';
+	$content_class = '';
+} elseif($data['default_sidebar_pos'] == 'Left') {
+	$content_css = 'float:right;';
+	$sidebar_css = 'float:left;';
+} elseif($data['default_sidebar_pos'] == 'Right') {
+	$content_css = 'float:left;';
+	$sidebar_css = 'float:right;';
+}
+
+$entry_title = '';
+if($portfolio_content == false) {
+	$entry_title = 'class="entry-title"';
 }
 ?>
-	<div id="content" class="full-width portfolio <?php echo $portfolio_layout; ?>">
+	<div id="content" class="portfolio <?php echo $portfolio_layout.' '.$content_class; ?>" style="<?php echo $content_css; ?>">
 		<?php if(category_description()): ?>
 		<div id="post-<?php the_ID(); ?>" <?php post_class('post'); ?>>
 			<div class="post-content">
@@ -68,7 +93,7 @@ if($data['portfolio_archive_layout'] == 'Portfolio Two Column') {
 			endif;
 			?>
 			<div class="portfolio-item <?php echo $item_classes; ?>">
-				<div class="image">
+				<div class="image" aria-haspopup="true">
 					<?php if($data['image_rollover']): ?>
 					<?php the_post_thumbnail($portfolio_image); ?>
 					<?php else: ?>
@@ -99,15 +124,22 @@ if($data['portfolio_archive_layout'] == 'Portfolio Two Column') {
 						<div class="image-extras-content">
 							<?php $full_image = wp_get_attachment_image_src(get_post_thumbnail_id($post->ID), 'full'); ?>
 							<a style="<?php echo $link_icon_css; ?>" class="icon link-icon" href="<?php echo $icon_permalink; ?>">Permalink</a>
-							<a style="<?php echo $zoom_icon_css; ?>" class="icon gallery-icon" href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php echo $post->ID; ?>]" title="<?php echo get_post_field('post_content', get_post_thumbnail_id($post->ID)); ?>"><img style="display:none;" alt="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id($post->ID)); ?>" />Gallery</a>
-							<h3><?php the_title(); ?></h3>
+							<?php
+							if(get_post_meta($post->ID, 'pyre_video_url', true)) {
+								$full_image[0] = get_post_meta($post->ID, 'pyre_video_url', true);
+							}
+							?>
+							<a style="<?php echo $zoom_icon_css; ?>" class="icon gallery-icon" href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php echo $post->ID; ?>]" title="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id($post->ID)); ?>"><img style="display:none;" alt="<?php echo get_post_meta(get_post_thumbnail_id($post->ID), '_wp_attachment_image_alt', true); ?>" />Gallery</a>
+							<h3 <?php echo $entry_title; ?>><?php the_title(); ?></h3>
 						</div>
 					</div>
 				</div>
 				<?php if($portfolio_content == true): ?>
 				<div class="portfolio-content clearfix">
-					<h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
+					<h2 class="entry-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
 					<h4><?php echo get_the_term_list($post->ID, 'portfolio_category', '', ', ', ''); ?></h4>
+
+					<div class="post-content">
 					<?php
 					if($data['portfolio_content_length'] == 'Excerpt') {
 						$stripped_content = strip_shortcodes( tf_content( $data['excerpt_length_portfolio'], $data['strip_html_excerpt'] ) );
@@ -116,6 +148,15 @@ if($data['portfolio_archive_layout'] == 'Portfolio Two Column') {
 						the_content();
 					}
 					?>
+					</div>
+					<?php if($data['portfolio_archive_layout'] == 'Portfolio One Column Text' || $data['portfolio_archive_layout'] == 'Portfolio One Column'): ?>
+					<div class="buttons">
+						<a href="<?php the_permalink(); ?>" class="button small"><?php echo __('Learn More', 'Avada'); ?></a>
+						<?php if(get_post_meta($post->ID, 'pyre_project_url', true)): ?>
+						<a href="<?php echo get_post_meta($post->ID, 'pyre_project_url', true); ?>" class="button small"><?php echo __('View Project', 'Avada'); ?></a>
+						<?php endif; ?>
+					</div>
+					<?php endif; ?>
 				</div>
 				<?php endif; ?>
 				<?php if($portfolio_sep == true): ?>
@@ -125,5 +166,12 @@ if($data['portfolio_archive_layout'] == 'Portfolio Two Column') {
 			<?php endif; endwhile; ?>
 		</div>
 		<?php themefusion_pagination($gallery->max_num_pages, $range = 2); ?>
+	</div>
+	<div id="sidebar" style="<?php echo $sidebar_css; ?>">
+	<?php
+	if ($data['portfolio_archive_sidebar'] != 'None' && function_exists('dynamic_sidebar')) {
+		generated_dynamic_sidebar($data['portfolio_archive_sidebar']);
+	}
+	?>
 	</div>
 <?php get_footer(); ?>

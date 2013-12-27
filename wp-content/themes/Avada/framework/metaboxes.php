@@ -25,8 +25,22 @@ class PyreThemeFrameworkMetaboxes {
 	
 	public function add_meta_boxes()
 	{
+		
+		$post_types = get_post_types( array( 'public' => true ) );
+
+		$disallowed = array('page', 'post', 'avada_portfolio', 'themefusion_elastic', 'product', 'wpsc-product');
+
+		foreach ( $post_types as $post_type ) {
+			if ( in_array( $post_type, $disallowed ) )
+				continue;
+
+			$this->add_meta_box('post_options', 'Avada Options', $post_type);
+		}
+
 		$this->add_meta_box('post_options', 'Post Options', 'post');
+
 		$this->add_meta_box('page_options', 'Page Options', 'page');
+
 		$this->add_meta_box('portfolio_options', 'Portfolio Options', 'avada_portfolio');
 
 		$this->add_meta_box('es_options', 'Elastic Slide Options', 'themefusion_elastic');
@@ -201,7 +215,7 @@ class PyreThemeFrameworkMetaboxes {
 			$html .= '</label>';
 			$html .= '<div class="field">';
 			    $html .= '<input name="pyre_' . $id . '" class="upload_field" id="pyre_' . $id . '" type="text" value="' . get_post_meta($post->ID, 'pyre_' . $id, true) . '" />';
-			    $html .= '<input class="upload_button" type="button" value="Browse" />';
+			    $html .= '<input class="avada_upload_button" type="button" value="Browse" />';
 				if($desc) {
 					$html .= '<p>' . $desc . '</p>';
 				}

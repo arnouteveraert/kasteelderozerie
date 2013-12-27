@@ -20,7 +20,7 @@
 		</span>
 		<?php endif; ?>
 		<span class="view-cart">
-			<a href="<?php echo get_permalink(get_option('woocommerce_cart_page_id')); ?>">View Cart</a>
+			<a href="<?php echo get_permalink(get_option('woocommerce_cart_page_id')); ?>"><?php _e('View Cart', 'Avada'); ?></a>
 		</span>
 	</span>
 </p>

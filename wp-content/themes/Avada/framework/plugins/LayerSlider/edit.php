@@ -625,7 +625,9 @@
 		<a href="#" class="settings"><?php _e('Global Settings', 'LayerSlider') ?></a>
 		<a href="#" class="layers active"><?php _e('Slides', 'LayerSlider') ?></a>
 		<a href="#" class="callbacks"><?php _e('Event Callbacks', 'LayerSlider') ?></a>
-		<a href="#" class="support unselectable"><?php _e('Documentation', 'LayerSlider') ?></a>
+		<a href="http://support.kreaturamedia.com/faq/4/layerslider-for-wordpress/" target="_blank" class="faq right unselectable"><?php _e('FAQ', 'LayerSlider') ?></a>
+		<a href="#" class="help right unselectable support"><?php _e('Documentation', 'LayerSlider') ?></a>
+		<span class="right help">Need help? Try these:</span>
 		<a href="#" class="clear unselectable"></a>
 	</div>
 
@@ -810,7 +812,7 @@
 							<td><?php _e('Background color', 'LayerSlider') ?></td>
 							<td>
 								<div class="reset-parent">
-									<input type="text" name="backgroundcolor" value="<?php echo $slider['properties']['backgroundcolor'] ?>" class="input ls-colorpicker">
+									<input type="text" name="backgroundcolor" value="<?php echo ($slider['properties']['backgroundcolor'] != 'transparent') ? $slider['properties']['backgroundcolor'] : '' ?>" class="input ls-colorpicker">
 								</div>
 							</td>
 							<td class="desc"><?php _e('Background color of LayerSlider. You can use all CSS methods, like hexa colors, rgb(r,g,b) method, color names, etc. Note, that slides with background will cover up the global background image.', 'LayerSlider') ?></td>
@@ -1540,7 +1542,7 @@
 														<tr>
 															<td><?php _e('Font', 'LayerSlider') ?></td>
 															<td class="right"><?php _e('Family', 'LayerSlider') ?></td>
-															<td><input type="text" name="font-family" class="auto" value="<?php echo isset($sublayer['styles']['font-family']) ? stripslashes($sublayer['styles']['font-family']) : '' ?>" data-help="<?php _e('List of your chosen fonts separated with a comma. Please use apostrophes if your font names contains white spaces. Example: Helvetica, Arial, sans-serif', 'LayerSlider') ?>"></td>
+															<td><input type="text" name="font-family" class="auto" value="<?php echo isset($sublayer['styles']['font-family']) ? htmlspecialchars(stripslashes($sublayer['styles']['font-family'])) : '' ?>" data-help="<?php _e('List of your chosen fonts separated with a comma. Please use apostrophes if your font names contains white spaces. Example: Helvetica, Arial, sans-serif', 'LayerSlider') ?>"></td>
 															<td class="right"><?php _e('Size', 'LayerSlider') ?></td>
 															<td><input type="text" name="font-size" class="auto" value="<?php echo isset($sublayer['styles']['font-size']) ? $sublayer['styles']['font-size'] : '' ?>" data-help="<?php _e('The font size in pixels. Example: 16px.', 'LayerSlider') ?>"></td>
 															<td class="right"><?php _e('Line-height', 'LayerSlider') ?></td>

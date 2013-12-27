@@ -7,7 +7,7 @@ function social_links_load_widgets()
 }
 
 class Social_Links_Widget extends WP_Widget {
-	
+
 	function Social_Links_Widget()
 	{
 		$widget_ops = array('classname' => 'social_links', 'description' => '');
@@ -16,9 +16,11 @@ class Social_Links_Widget extends WP_Widget {
 
 		$this->WP_Widget('social_links-widget', 'Avada: Social Links', $widget_ops, $control_ops);
 	}
-	
+
 	function widget($args, $instance)
 	{
+		global $data;
+
 		extract($args);
 		$title = apply_filters('widget_title', $instance['title']);
 
@@ -27,11 +29,25 @@ class Social_Links_Widget extends WP_Widget {
 		if($title) {
 			echo $before_title.$title.$after_title;
 		}
+
+		$color_scheme ='';
+		if (isset($instance['color_scheme']) && $instance['color_scheme'] == 'Dark') {
+			$color_scheme = 'social-networks-light';
+		}
+
+		if(!isset($instance['linktarget'])) {
+			$instance['linktarget'] = '';
+		}
+
+		$nofollow = '';
+		if($data['nofollow_social_links']) {
+			$nofollow = ' rel="nofollow"';
+		}
 		?>
-		<ul class="social-networks clearfix">
+		<ul class="social-networks <?php echo $color_scheme; ?> clearfix">
 			<?php if($instance['rss_link']): ?>
 			<li class="rss">
-				<a class="rss" href="<?php echo $instance['rss_link']; ?>">RSS</a>
+				<a class="rss" href="<?php echo $instance['rss_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>RSS</a>
 				<div class="popup">
 					<div class="holder">
 						<p>RSS</p>
@@ -41,17 +57,17 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['fb_link']): ?>
 			<li class="facebook">
-				<a class="facebook" href="<?php echo $instance['fb_link']; ?>">Facebook</a>
+				<a class="facebook" href="<?php echo $instance['fb_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Facebook</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Facebook</p>
 					</div>
-				</div>				
+				</div>
 			</li>
 			<?php endif; ?>
 			<?php if($instance['twitter_link']): ?>
 			<li class="twitter">
-				<a class="twitter" href="<?php echo $instance['twitter_link']; ?>">Twitter</a>
+				<a class="twitter" href="<?php echo $instance['twitter_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Twitter</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Twitter</p>
@@ -61,7 +77,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['dribbble_link']): ?>
 			<li class="dribbble">
-				<a class="dribbble" href="<?php echo $instance['dribbble_link']; ?>">Dribble</a>
+				<a class="dribbble" href="<?php echo $instance['dribbble_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Dribble</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Dribbble</p>
@@ -71,7 +87,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['google_link']): ?>
 			<li class="google">
-				<a class="google" href="<?php echo $instance['google_link']; ?>">Google</a>
+				<a class="google" href="<?php echo $instance['google_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Google</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Google +1</p>
@@ -81,7 +97,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['linkedin_link']): ?>
 			<li class="linkedin">
-				<a class="linkedin" href="<?php echo $instance['linkedin_link']; ?>">LinkedIn</a>
+				<a class="linkedin" href="<?php echo $instance['linkedin_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>LinkedIn</a>
 				<div class="popup">
 					<div class="holder">
 						<p>LinkedIn</p>
@@ -91,7 +107,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['blogger_link']): ?>
 			<li class="blogger">
-				<a class="blogger" href="<?php echo $instance['blogger_link']; ?>">Blogger</a>
+				<a class="blogger" href="<?php echo $instance['blogger_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Blogger</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Blogger</p>
@@ -101,7 +117,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['tumblr_link']): ?>
 			<li class="tumblr">
-				<a class="tumblr" href="<?php echo $instance['tumblr_link']; ?>">Tumblr</a>
+				<a class="tumblr" href="<?php echo $instance['tumblr_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Tumblr</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Tumblr</p>
@@ -111,7 +127,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['reddit_link']): ?>
 			<li class="reddit">
-				<a class="reddit" href="<?php echo $instance['reddit_link']; ?>">Reddit</a>
+				<a class="reddit" href="<?php echo $instance['reddit_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Reddit</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Reddit</p>
@@ -121,7 +137,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['yahoo_link']): ?>
 			<li class="yahoo">
-				<a class="yahoo" href="<?php echo $instance['yahoo_link']; ?>">Yahoo</a>
+				<a class="yahoo" href="<?php echo $instance['yahoo_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Yahoo</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Yahoo</p>
@@ -131,7 +147,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['deviantart_link']): ?>
 			<li class="deviantart">
-				<a class="deviantart" href="<?php echo $instance['deviantart_link']; ?>">Deviantart</a>
+				<a class="deviantart" href="<?php echo $instance['deviantart_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Deviantart</a>
 				<div class="popup">
 					<div class="holder">
 						<p>DeviantArt</p>
@@ -141,7 +157,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['vimeo_link']): ?>
 			<li class="vimeo">
-				<a class="vimeo" href="<?php echo $instance['vimeo_link']; ?>">Vimeo</a>
+				<a class="vimeo" href="<?php echo $instance['vimeo_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Vimeo</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Vimeo</p>
@@ -151,7 +167,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['youtube_link']): ?>
 			<li class="youtube">
-				<a class="youtube" href="<?php echo $instance['youtube_link']; ?>">Youtube</a>
+				<a class="youtube" href="<?php echo $instance['youtube_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Youtube</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Youtube</p>
@@ -161,7 +177,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['pinterest_link']): ?>
 			<li class="pinterest">
-				<a class="pinterest" href="<?php echo $instance['pinterest_link']; ?>">Pinterest</a>
+				<a class="pinterest" href="<?php echo $instance['pinterest_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Pinterest</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Pinterest</p>
@@ -171,7 +187,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['digg_link']): ?>
 			<li class="digg">
-				<a class="digg" href="<?php echo $instance['digg_link']; ?>">Digg</a>
+				<a class="digg" href="<?php echo $instance['digg_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Digg</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Digg</p>
@@ -181,7 +197,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['forrst_link']): ?>
 			<li class="forrst">
-				<a class="forrst" href="<?php echo $instance['forrst_link']; ?>">Forrst</a>
+				<a class="forrst" href="<?php echo $instance['forrst_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Forrst</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Forrst</p>
@@ -191,7 +207,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['myspace_link']): ?>
 			<li class="myspace">
-				<a class="myspace" href="<?php echo $instance['myspace_link']; ?>">Myspace</a>
+				<a class="myspace" href="<?php echo $instance['myspace_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Myspace</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Myspace</p>
@@ -201,7 +217,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['skype_link']): ?>
 			<li class="skype">
-				<a class="skype" href="<?php echo $instance['skype_link']; ?>">Skype</a>
+				<a class="skype" href="<?php echo $instance['skype_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Skype</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Skype</p>
@@ -211,7 +227,7 @@ class Social_Links_Widget extends WP_Widget {
 			<?php endif; ?>
 			<?php if($instance['flickr_link']): ?>
 			<li class="flickr">
-				<a class="flickr" href="<?php echo $instance['flickr_link']; ?>">Flickr</a>
+				<a class="flickr" href="<?php echo $instance['flickr_link']; ?>" target="<?php echo $instance['linktarget']; ?>"<?php echo $nofollow; ?>>Flickr</a>
 				<div class="popup">
 					<div class="holder">
 						<p>Flickr</p>
@@ -223,12 +239,14 @@ class Social_Links_Widget extends WP_Widget {
 		<?php
 		echo $after_widget;
 	}
-	
+
 	function update($new_instance, $old_instance)
 	{
 		$instance = $old_instance;
 
 		$instance['title'] = $new_instance['title'];
+		$instance['color_scheme'] = $new_instance['color_scheme'];
+		$instance['linktarget'] = $new_instance['linktarget'];
 		$instance['rss_link'] = $new_instance['rss_link'];
 		$instance['fb_link'] = $new_instance['fb_link'];
 		$instance['twitter_link'] = $new_instance['twitter_link'];
@@ -254,11 +272,22 @@ class Social_Links_Widget extends WP_Widget {
 
 	function form($instance)
 	{
-		$defaults = array('title' => 'Get Social');
+		$defaults = array('title' => 'Get Social', 'color_scheme' => 'Light', 'linktarget' => '', 'rss_link' => '', 'fb_link' => '', 'twitter_link' => '', 'dribbble_link'=> '', 'google_link' => '', 'linkedin_link' => '', 'blogger_link' => '', 'tumblr_link' => '', 'reddit_link' => '', 'yahoo_link' => '', 'deviantart_link' => '', 'vimeo_link' => '', 'youtube_link' => '', 'pinterest_link' => '', 'digg_link' => '', 'flickr_link' => '', 'forrst_link' => '', 'myspace_link' => '', 'skype_link' => '');
 		$instance = wp_parse_args((array) $instance, $defaults); ?>
 		<p>
 			<label for="<?php echo $this->get_field_id('title'); ?>">Title:</label>
 			<input class="widefat" style="width: 216px;" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" value="<?php echo $instance['title']; ?>" />
+		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id('color_scheme'); ?>">Color Scheme:</label>
+			<select id="<?php echo $this->get_field_id('color_scheme'); ?>" name="<?php echo $this->get_field_name('color_scheme'); ?>" class="widefat" style="width:100%;">
+				<option <?php if ('Light' == $instance['color_scheme']) echo 'selected="selected"'; ?>>Light</option>
+				<option <?php if ('Dark' == $instance['color_scheme']) echo 'selected="selected"'; ?>>Dark</option>
+			</select>
+		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id('linktarget'); ?>">Link Target:</label>
+			<input class="widefat" style="width: 216px;" id="<?php echo $this->get_field_id('linktarget'); ?>" name="<?php echo $this->get_field_name('linktarget'); ?>" value="<?php echo $instance['linktarget']; ?>" />
 		</p>
 		<p>
 			<label for="<?php echo $this->get_field_id('rss_link'); ?>">RSS Link:</label>

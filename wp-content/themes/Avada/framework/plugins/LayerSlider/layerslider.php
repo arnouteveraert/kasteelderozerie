@@ -4,7 +4,7 @@
 Plugin Name: LayerSlider WP
 Plugin URI: http://codecanyon.net/user/kreatura/
 Description: LayerSlider is the most advanced responsive WordPress slider plugin with the famous Parallax Effect and over 200 2D & 3D transitions.
-Version: 4.6.0
+Version: 4.6.6
 Author: Kreatura Media
 Author URI: http://kreaturamedia.com/
 */
@@ -14,11 +14,20 @@ Author URI: http://kreaturamedia.com/
 /*                        Actions                       */
 /********************************************************/
 
-	$GLOBALS['lsPluginVersion'] = '4.6.0';
+require_once dirname(__FILE__) . '/lib/class.km.autoupdate.plugins.php';
+
+
+
+	// Deprecated, will be removed
 	$GLOBALS['lsPluginPath'] = get_template_directory_uri() . '/framework/plugins/LayerSlider/';
 	$GLOBALS['lsAutoUpdateBox'] = false;
-	$GLOBALS['lsRepoAPI'] = 'http://repo.kreatura.hu/';
-	$GLOBALS['lsPluginSlug'] = basename(dirname(__FILE__));
+	$GLOBALS['lsPluginVersion'] = '4.6.6';
+
+	// Constants
+	define('LS_ROOT_PATH', __FILE__);
+	define('LS_PLUGIN_VERSION', '4.6.6');
+	define('LS_PLUGIN_SLUG', basename(dirname(__FILE__)));
+	define('LS_PLUGIN_BASE', plugin_basename(__FILE__));
 
 	// Activation hook for creating the initial DB table
 	register_activation_hook(__FILE__, 'layerslider_activation_scripts');
@@ -31,8 +40,13 @@ Author URI: http://kreaturamedia.com/
 
 	// Auto update
 	if(get_option('layerslider-validated', '0')) {
-		add_filter('pre_set_site_transient_update_plugins', 'layerslider_check_for_plugin_update');
-		add_filter('plugins_api', 'layerslider_plugin_api_call', 10, 3);
+		new KM_PluginUpdates(array(
+			'root' => LS_ROOT_PATH,
+			'version' => LS_PLUGIN_VERSION,
+			'repo' => 'http://updates.kreaturamedia.com/plugins/',
+			'channel' => get_option('layerslider-release-channel', 'stable'),
+			'license' => get_option('layerslider-purchase-code', '')
+		));
 	}
 
 	// Hook to trigger plugin override functions
@@ -79,6 +93,9 @@ Author URI: http://kreaturamedia.com/
 
 	// Help menu
 	add_filter('contextual_help', 'layerslider_help', 10, 3);
+	if(strstr($_SERVER['REQUEST_URI'], '?page=layerslider')) {
+		add_action('admin_notices', 'layerslider_update_notice');
+	}
 
 	// Storage notice
 	if(get_option('layerslider-slides') != false) {
@@ -92,6 +109,7 @@ Author URI: http://kreaturamedia.com/
 			add_action('admin_notices', 'layerslider_admin_notice');
 		}
 	}
+
 
 /********************************************************/
 /*                  LayerSlider locale                  */
@@ -193,119 +211,45 @@ function layerslider_create_db_table() {
 /********************************************************/
 function layerslider_verify_purchase_code() {
 
-	// Build URL
-	$url = 'http://activate.kreatura.hu?';
-	$url.= 'plugin='.urlencode('LayerSlider WP').'&';
-	$url.= 'code='.urlencode($_POST['purchase_code']);
+	global $wp_version;
 
-	// Store purchase code
+	// Get data
+	$pcode = get_option('layerslider-purchase-code', '');
+	$validated = get_option('layerslider-validated', '0');
+	$channel = ($_POST['channel'] === 'beta') ? 'beta' : 'stable';
+
+	// Save sent data
+	update_option('layerslider-release-channel', $channel);
 	update_option('layerslider-purchase-code', $_POST['purchase_code']);
 
-	// Make the call
-	$response = wp_remote_post($url);
-	$response = $response['body'];
+	// Release channel
+	if($validated == 1) {
+		if($pcode == $_POST['purchase_code']) {
+			die(json_encode(array('success' => true, 'message' => __('Your settings were successfully saved.', 'LayerSlider'))));
+		}
+	}
 
-	// Check validation
-	if($response == 'valid') {
+	// Verify license
+	$response = wp_remote_post('http://activate.kreaturamedia.com/', array(
+		'user-agent' => 'WordPress/'.$wp_version.'; '.get_bloginfo('url'),
+		'body' => array(
+			'plugin' => urlencode('LayerSlider WP'),
+			'license' => urlencode($_POST['purchase_code'])
+		)
+	));
 
-		// Store validity
+	// Valid
+	if($response['body'] == 'valid') {
 		update_option('layerslider-validated', '1');
-
-		// Show message
 		die(json_encode(array('success' => true, 'message' => __('Thank you for purchasing LayerSlider WP. You successfully validated your purchase code for auto-updates.', 'LayerSlider'))));
 
+	// Invalid
 	} else {
-
-		// Store validity
 		update_option('layerslider-validated', '0');
-
-		// Show message
 		die(json_encode(array('success' => false, 'message' => __("Your purchase code doesn't appear to be valid. Please make sure that you entered your purchase code correctly.", "LayerSlider"))));
 	}
 }
 
-/********************************************************/
-/*               LayerSlider Auto-update                */
-/********************************************************/
-
-function layerslider_check_for_plugin_update($checked_data) {
-
-	// Get WP version
-	global  $wp_version;
-
-	// Get purchase code
-	$code = get_option('layerslider-purchase-code', '');
-
-	//Comment out these two lines during testing.
-	if (empty($checked_data->checked))
-		return $checked_data;
-
-	$args = array(
-		'slug' => $GLOBALS['lsPluginSlug'],
-		'version' => $checked_data->checked[$GLOBALS['lsPluginSlug'] .'/'. strtolower($GLOBALS['lsPluginSlug']) .'.php'],
-	);
-
-	$request_string = array(
-			'body' => array(
-				'action' => 'basic_check',
-				'code' => $code,
-				'request' => serialize($args),
-				'api-key' => md5(get_bloginfo('url'))
-			),
-			'user-agent' => 'WordPress/' . $wp_version . '; ' . get_bloginfo('url')
-		);
-
-	// Start checking for an update
-	$raw_response = wp_remote_post($GLOBALS['lsRepoAPI'], $request_string);
-
-	if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
-		$response = unserialize($raw_response['body']);
-
-	if (is_object($response) && !empty($response)) // Feed the update data into WP updater
-		$checked_data->response[$GLOBALS['lsPluginSlug'] .'/'. strtolower($GLOBALS['lsPluginSlug']) .'.php'] = $response;
-
-	return $checked_data;
-}
-
-function layerslider_plugin_api_call($def, $action, $args) {
-
-	// Get WP version
-	global $wp_version;
-
-	// Get purchase code
-	$code = get_option('layerslider-purchase-code', '');
-
-	if (!isset($args->slug) || ($args->slug != $GLOBALS['lsPluginSlug']))
-		return false;
-
-	// Get the current version
-	$plugin_info = get_site_transient('update_plugins');
-	$current_version = $plugin_info->checked[$GLOBALS['lsPluginSlug'] .'/'. strtolower($GLOBALS['lsPluginSlug']) .'.php'];
-	$args->version = $current_version;
-
-	$request_string = array(
-			'body' => array(
-				'action' => $action,
-				'code' => $code,
-				'request' => serialize($args),
-				'api-key' => md5(get_bloginfo('url'))
-			),
-			'user-agent' => 'WordPress/' . $wp_version . '; ' . get_bloginfo('url')
-		);
-
-	$request = wp_remote_post($GLOBALS['lsRepoAPI'], $request_string);
-
-	if (is_wp_error($request)) {
-		$res = new WP_Error('plugins_api_failed', __('An Unexpected HTTP Error occurred during the API request.</p> <p><a href="?" onclick="document.location.reload(); return false;">Try again</a>', 'LayerSlider'), $request->get_error_message());
-	} else {
-		$res = unserialize($request['body']);
-
-		if ($res === false)
-			$res = new WP_Error('plugins_api_failed', __('An unknown error occurred', 'LayerSlider'), $request['body']);
-	}
-
-	return $res;
-}
 
 function layerslider_loaded() {
 	if(has_action('layerslider_ready')) {
@@ -319,11 +263,11 @@ function layerslider_loaded() {
 
 	function layerslider_enqueue_content_res() {
 
-		wp_enqueue_script('layerslider_js', $GLOBALS['lsPluginPath'].'js/layerslider.kreaturamedia.jquery.js', array('jquery'), $GLOBALS['lsPluginVersion'] );
+		wp_enqueue_script('layerslider_js', $GLOBALS['lsPluginPath'].'js/layerslider.kreaturamedia.jquery.js', array('jquery'), LS_PLUGIN_VERSION );
 		wp_enqueue_script('jquery_easing', $GLOBALS['lsPluginPath'].'js/jquery-easing-1.3.js', array('jquery'), '1.3.0' );
 		wp_enqueue_script('transit', $GLOBALS['lsPluginPath'].'js/jquerytransit.js', array('jquery'), '0.9.9' );
-		wp_enqueue_script('layerslider_transitions', $GLOBALS['lsPluginPath'].'js/layerslider.transitions.js', array(), $GLOBALS['lsPluginVersion'] );
-		wp_enqueue_style('layerslider_css', $GLOBALS['lsPluginPath'].'css/layerslider.css', array(), $GLOBALS['lsPluginVersion'] );
+		wp_enqueue_script('layerslider_transitions', $GLOBALS['lsPluginPath'].'js/layerslider.transitions.js', array(), LS_PLUGIN_VERSION );
+		wp_enqueue_style('layerslider_css', $GLOBALS['lsPluginPath'].'css/layerslider.css', array(), LS_PLUGIN_VERSION );
 
 		// Custom transitions
 		$upload_dir = wp_upload_dir();
@@ -331,7 +275,7 @@ function layerslider_loaded() {
 		$custom_trs_url = $upload_dir['baseurl'] . '/layerslider.custom.transitions.js';
 
 		if(file_exists($custom_trs)) {
-			wp_enqueue_script('layerslider_custom_transitions', $custom_trs_url, array(), $GLOBALS['lsPluginVersion'] );
+			wp_enqueue_script('layerslider_custom_transitions', $custom_trs_url, array(), LS_PLUGIN_VERSION );
 		}
 
 		// Custom CSS
@@ -339,7 +283,7 @@ function layerslider_loaded() {
 		$custom_css_url = $upload_dir['baseurl'] . '/layerslider.custom.css';
 
 		if(file_exists($custom_css)) {
-			wp_enqueue_style('layerslider_custom_css', $custom_css_url, array(), $GLOBALS['lsPluginVersion'] );
+			wp_enqueue_style('layerslider_custom_css', $custom_css_url, array(), LS_PLUGIN_VERSION );
 		}
 	}
 
@@ -354,7 +298,7 @@ function layerslider_loaded() {
 		global $wp_version;
 
 		// Global
-		wp_enqueue_style('layerslider_global_css', $GLOBALS['lsPluginPath'].'css/global.css', array(), $GLOBALS['lsPluginVersion'] );
+		wp_enqueue_style('layerslider_global_css', $GLOBALS['lsPluginPath'].'css/global.css', array(), LS_PLUGIN_VERSION );
 
 		// LayerSlider
 		if(isset($_GET['page']) && strstr($_GET['page'], 'layerslider') != false) {
@@ -370,27 +314,26 @@ function layerslider_loaded() {
 			wp_enqueue_script('jquery-ui-sortable');
 			wp_enqueue_script('jquery-ui-draggable');
 
-			// New color picker
-			if(version_compare($wp_version, '3.5', '>=')) {
-				wp_enqueue_script('wp-color-picker');
-				wp_enqueue_style('wp-color-picker');
-			}
-
 			wp_enqueue_script('wp-pointer');
 			wp_enqueue_style('wp-pointer');
 
 			wp_enqueue_script('json2');
 
-			wp_enqueue_script('layerslider_admin_js', $GLOBALS['lsPluginPath'].'js/admin.js', array('jquery'), $GLOBALS['lsPluginVersion'] );
-			wp_enqueue_style('layerslider_admin_css', $GLOBALS['lsPluginPath'].'css/admin.css', array(), $GLOBALS['lsPluginVersion'] );
+			wp_enqueue_script('layerslider_admin_js', $GLOBALS['lsPluginPath'].'js/admin.js', array('jquery'), LS_PLUGIN_VERSION );
+			wp_enqueue_style('layerslider_admin_css', $GLOBALS['lsPluginPath'].'css/admin.css', array(), LS_PLUGIN_VERSION );
 
-			wp_enqueue_script('layerslider_js', $GLOBALS['lsPluginPath'].'js/layerslider.kreaturamedia.jquery.js', array('jquery'), $GLOBALS['lsPluginVersion'] );
-			wp_enqueue_script('layerslider_transitions', $GLOBALS['lsPluginPath'].'js/layerslider.transitions.js', array(), $GLOBALS['lsPluginVersion'] );
+			// MiniColor
+			wp_enqueue_script('minicolor', $GLOBALS['lsPluginPath'].'js/minicolors/jquery.minicolors.js', array('jquery'), LS_PLUGIN_VERSION );
+			wp_enqueue_style('minicolor', $GLOBALS['lsPluginPath'].'js/minicolors/jquery.minicolors.css', array(), LS_PLUGIN_VERSION );
+
+			// LayerSlider for preview
+			wp_enqueue_script('layerslider_js', $GLOBALS['lsPluginPath'].'js/layerslider.kreaturamedia.jquery.js', array('jquery'), LS_PLUGIN_VERSION );
+			wp_enqueue_script('layerslider_transitions', $GLOBALS['lsPluginPath'].'js/layerslider.transitions.js', array(), LS_PLUGIN_VERSION );
 			wp_enqueue_script('jquery_easing', $GLOBALS['lsPluginPath'].'js/jquery-easing-1.3.js', array('jquery'), '1.3.0' );
 			wp_enqueue_script('transit', $GLOBALS['lsPluginPath'].'js/jquerytransit.js', array('jquery'), '0.9.9' );
-			wp_enqueue_script('layerslider_tr_gallery', $GLOBALS['lsPluginPath'].'js/layerslider.transitiongallery.js', array('jquery'), $GLOBALS['lsPluginVersion'] );
-			wp_enqueue_style('layerslider_css', $GLOBALS['lsPluginPath'].'css/layerslider.css', array(), $GLOBALS['lsPluginVersion'] );
-			wp_enqueue_style('layerslider_tr_gallery', $GLOBALS['lsPluginPath'].'css/layerslider.transitiongallery.css', array(), $GLOBALS['lsPluginVersion'] );
+			wp_enqueue_script('layerslider_tr_gallery', $GLOBALS['lsPluginPath'].'js/layerslider.transitiongallery.js', array('jquery'), LS_PLUGIN_VERSION );
+			wp_enqueue_style('layerslider_css', $GLOBALS['lsPluginPath'].'css/layerslider.css', array(), LS_PLUGIN_VERSION );
+			wp_enqueue_style('layerslider_tr_gallery', $GLOBALS['lsPluginPath'].'css/layerslider.transitiongallery.css', array(), LS_PLUGIN_VERSION );
 
 			// Custom transitions
 			$upload_dir = wp_upload_dir();
@@ -398,7 +341,7 @@ function layerslider_loaded() {
 			$custom_trs_url = $upload_dir['baseurl'] . '/layerslider.custom.transitions.js';
 
 			if(file_exists($custom_trs)) {
-				wp_enqueue_script('layerslider_custom_transitions', $custom_trs_url, array(), $GLOBALS['lsPluginVersion'] );
+				wp_enqueue_script('layerslider_custom_transitions', $custom_trs_url, array(), LS_PLUGIN_VERSION );
 			}
 
 			// Custom CSS
@@ -406,13 +349,13 @@ function layerslider_loaded() {
 			$custom_css_url = $upload_dir['baseurl'] . '/layerslider.custom.css';
 
 			if(file_exists($custom_css)) {
-				wp_enqueue_style('layerslider_custom_css', $custom_css_url, array(), $GLOBALS['lsPluginVersion'] );
+				wp_enqueue_style('layerslider_custom_css', $custom_css_url, array(), LS_PLUGIN_VERSION );
 			}
 		}
 
 		// Transition builder
 		if(isset($_GET['page']) && strstr($_GET['page'], 'layerslider_transition_builder') != false) {
-			wp_enqueue_script('layerslider_tr_builder', $GLOBALS['lsPluginPath'].'js/builder.js', array('jquery'), $GLOBALS['lsPluginVersion'] );
+			wp_enqueue_script('layerslider_tr_builder', $GLOBALS['lsPluginPath'].'js/builder.js', array('jquery'), LS_PLUGIN_VERSION );
 		}
 	}
 
@@ -437,7 +380,7 @@ function layerslider_help($contextual_help, $screen_id, $screen) {
 				   'id' => 'ls_faq',
 				   'title' => 'Need help?',
 				   'content' => file_get_contents(dirname(__FILE__).'/docs/faq.html')
-				));				
+				));
 
 				// Managing sliders
 				$screen->add_help_tab(array(
@@ -534,7 +477,7 @@ function layerslider_help($contextual_help, $screen_id, $screen) {
 				   'id' => 'ls_faq',
 				   'title' => 'Need help?',
 				   'content' => file_get_contents(dirname(__FILE__).'/docs/faq.html')
-				));	
+				));
 
 				// Getting started video
 				/*
@@ -678,6 +621,9 @@ function layerslider_router() {
 	} elseif(isset($_GET['action']) && $_GET['action'] == 'edit') {
 		include(dirname(__FILE__).'/edit.php');
 
+	} elseif(isset($_GET['action']) && $_GET['action'] == 'test_install') {
+		include(dirname(__FILE__).'/testinstall.php');
+
 	// List
 	} else {
 		include(dirname(__FILE__).'/list.php');
@@ -706,10 +652,24 @@ function layerslider_transition_builder() {
 function layerslider_register_settings() {
 
 	// Global settings
-	if(isset($_POST['posted_ls_global']) && strstr($_SERVER['REQUEST_URI'], 'layerslider')) {
-		update_option('layerslider_custom_capability', $_POST['custom_capability']);
-		header('Location: admin.php?page=layerslider');
-		die();
+	if(isset($_POST['ls-access-permission']) && strstr($_SERVER['REQUEST_URI'], 'layerslider')) {
+
+		// Get capability
+		$capability = ($_POST['custom_role'] == 'custom') ? $_POST['custom_capability'] : $_POST['custom_role'];
+
+		// Error message
+		$error = __('Your account does not have the necessary permission you chose, and your settings have not been saved to prevent locking yourself out of the plugin.', 'LayerSlider');
+		$success = __('Permission changes have been saved successfully.', 'LayerSlider');
+
+		// Test value
+		if(empty($capability) || !current_user_can($capability)) {
+			header('Location: admin.php?page=layerslider&error=1&message='.urlencode($error));
+			die();
+		} else {
+			update_option('layerslider_custom_capability', $capability);
+			header('Location: admin.php?page=layerslider&message='.urlencode($success));
+			die();
+		}
 	}
 
 	// Add slider
@@ -771,8 +731,8 @@ function layerslider_register_settings() {
 		}
 
 		// DB data
-		$name = $wpdb->escape($slider['properties']['title']);
-		$data = $wpdb->escape(json_encode($slider));
+		$name = esc_sql($slider['properties']['title']);
+		$data = esc_sql(json_encode($slider));
 
 		// Update
 		$wpdb->query("UPDATE $table_name SET
@@ -829,8 +789,8 @@ function layerslider_register_settings() {
 		}
 
 		// DB data
-		$name = $wpdb->escape($data['properties']['title']);
-		$data = $wpdb->escape(json_encode($data));
+		$name = esc_sql($data['properties']['title']);
+		$data = esc_sql(json_encode($data));
 
 		// Update
 		$wpdb->query("UPDATE $table_name SET
@@ -845,49 +805,85 @@ function layerslider_register_settings() {
 	}
 
 	// Import settings
-	if(isset($_POST['import']) && strstr($_SERVER['REQUEST_URI'], 'layerslider')) {
+	if(isset($_POST['ls-import']) && strstr($_SERVER['REQUEST_URI'], 'layerslider')) {
 
-		// Try to get slider data with JSON
-		$import = json_decode(base64_decode($_POST['import']), true);
-
-		// Invalid export code
-		if(!is_array($import)) {
-
-			// Try to get slider data with PHP unserialize
-			$import = unserialize(base64_decode($_POST['import']));
-
-			// Failed to extract the slider data, exit
-			if(!is_array($import)) {
-				header('Location: '.$_SERVER['REQUEST_URI'].'');
-				die();
-			}
+		// Check export file if any
+		if(!is_uploaded_file($_FILES['import_file']['tmp_name'])) {
+			header('Location: '.$_SERVER['REQUEST_URI'].'&error=1&message='.urlencode('Choose a file to import sliders.'));
+			die('No data received.');
 		}
 
-		// Get WPDB Object
-		global $wpdb;
+		// Get decoded file data
+		$data = base64_decode(file_get_contents($_FILES['import_file']['tmp_name']));
 
-		// Table name
-		$table_name = $wpdb->prefix . "layerslider";
+		// Parsing JSON or PHP object
+		if(!$parsed = json_decode($data, true)) {
+			$parsed = unserialize($data);
+		}
 
 		// Iterate over imported sliders
-		foreach($import as $item) {
+		if(is_array($parsed)) {
 
-			// Execute query
-			$wpdb->query(
-				$wpdb->prepare("INSERT INTO $table_name
-									(name, data, date_c, date_m)
-								VALUES (%s, %s, %d, %d)",
-								$item['properties']['title'],
-								json_encode($item),
-								time(),
-								time()
-								)
-			);
+			//  DB stuff
+			global $wpdb;
+			$table_name = $wpdb->prefix . "layerslider";
+
+			// Import sliders
+			foreach($parsed as $item) {
+
+				// Fix for export issue in v4.6.4
+				if(is_string($item)) {
+					$item = json_decode($item, true);
+				}
+
+				// Add to DB
+				$wpdb->query(
+					$wpdb->prepare("INSERT INTO $table_name (name, data, date_c, date_m)
+									VALUES (%s, %s, %d, %d)",
+					$item['properties']['title'], json_encode($item), time(), time()
+					)
+				);
+			}
+
+			// Success
+			header('Location: '.menu_page_url('layerslider', 0).'&message='.urlencode('Slider imported successfully.'));
+
+		// Fail
+		} else {
+			header('Location: '.menu_page_url('layerslider', 0).'&error=1&message='.urlencode('The import file seems to be invalid or corrupted.'));
 		}
 
-		// Redirect back
-		header('Location: '.$_SERVER['REQUEST_URI'].'');
 		die();
+	}
+
+	if(isset($_POST['ls-export']) && strstr($_SERVER['REQUEST_URI'], 'layerslider')) {
+
+		$data = array();
+
+		// All sliders
+		if($_POST['sliders'] == -1) {
+			$sliders = lsSliders(200, false, true);
+			foreach($sliders as $item) {
+				$data[] = $item['data'];
+			}
+		// Specific slider
+		} elseif(!empty($_POST['sliders']) && is_numeric($_POST['sliders'])) {
+			$sliders = lsSliderById( (int) $_POST['sliders']);
+			$data[] = $sliders['data'];
+
+		} else {
+			die('Invalid data received.');
+		}
+
+		// Slider name
+		$name = 'LayerSlider Export '.date('Y-m-d').' at '.date('H.i.s').'.json';
+
+        // Set the headers to force a download
+        header('Content-type: application/force-download');
+        header('Content-Disposition: attachment; filename="'.str_replace(' ', '_', $name).'"');
+
+		// Output
+		die(base64_encode(json_encode($data)));
 	}
 
 	// Skin Editor
@@ -996,12 +992,6 @@ function layerslider_register_settings() {
 		$upload_dir = wp_upload_dir();
 		$custom_trs = $upload_dir['basedir'] . '/layerslider.custom.transitions.js';
 
-		/*
-			echo '<pre>';
-			print_r($transitions);
-			echo '</pre>';
-			die();
-		*/
 
 		// Build transition file
 		$data = 'var layerSliderCustomTransitions = ';
@@ -1134,7 +1124,7 @@ function lsSliderById($id = 0) {
 		return false;
 	}
 
-	// Convert data 
+	// Convert data
 	$slider['data'] = json_decode($slider['data'], true);
 
 	// Return the slider
@@ -1151,9 +1141,7 @@ function lsSliders($limit = 50, $desc = true, $withData = false) {
 	$order = ($desc === true) ? 'DESC' : 'ASC';
 
 	// Data
-	if($withData === true) {
-		$data = ' data,';
-	}
+	$data = ($withData === true) ? ' data,' : '';
 
 	// Get sliders
 	$link = $sliders = $wpdb->get_results( "SELECT id, name,$data date_c, date_m FROM $table_name
@@ -1163,6 +1151,13 @@ function lsSliders($limit = 50, $desc = true, $withData = false) {
 	// No results
 	if($link == null) {
 		return array();
+	}
+
+	// Data
+	if($withData === true) {
+		foreach($sliders as $key => $val) {
+			$sliders[$key]['data'] = json_decode($val['data'], true);
+		}
 	}
 
 	return $sliders;
@@ -1221,7 +1216,7 @@ function layerslider_init($atts) {
 }
 
 /********************************************************/
-/*              LayerSlider storage notice              */
+/*                  LayerSlider notices                 */
 /********************************************************/
 
 function layerslider_admin_notice() {
@@ -1237,6 +1232,32 @@ function layerslider_admin_notice() {
         <div class="clear"></div>
     </div>
     <?php
+}
+
+function layerslider_update_notice() {
+
+	// Get plugin updates
+	$updates = get_plugin_updates();
+
+	// Check for update
+	if(isset($updates[LS_PLUGIN_BASE]) && isset($updates[LS_PLUGIN_BASE]->update)) {
+		$update = $updates[LS_PLUGIN_BASE];
+		add_thickbox();
+		?>
+	    <div id="layerslider_notice">
+	        <img src="<?php echo $GLOBALS['lsPluginPath'].'img/ls_80x80.png' ?>" alt="WeatherSlider icon">
+	        <h1><?php _e('Update available for LayerSlider WP!', 'LayerSlider') ?></h1>
+	        <p>
+	            <?php echo sprintf(__('You have version %1$s. Update to version %2$s.', 'LayerSlider'), $update->Version, $update->update->new_version); ?><br>
+	            <i><?php echo $update->update->upgrade_notice ?></i>
+	            <a href="plugin-install.php?tab=plugin-information&plugin=LayerSlider&section=changelog&TB_iframe=true&width=640&height=747" class="thickbox">
+	            	<?php _e('Review changes & Install', 'LayerSlider') ?>
+	            </a>
+	        </p>
+	        <div class="clear"></div>
+	    </div>
+	    <?php
+	}
 }
 
 /********************************************************/

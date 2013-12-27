@@ -20,7 +20,7 @@ $order = new WC_Order( $order_id );
 <table class="shop_table order_details">
 	<thead>
 		<tr>
-			<th class="product-name"><?php _e( 'Item', 'woocommerce' ); ?></th>
+			<th class="product-name"><?php _e( 'Item', 'Avada' ); ?></th>
 			<th class="product-quantity"><?php _e( 'Quantity', 'woocommerce' ); ?></th>
 			<th class="product-subtotal"><?php _e( 'Total', 'woocommerce' ); ?></th>
 		</tr>
@@ -32,6 +32,18 @@ $order = new WC_Order( $order_id );
 			foreach($order->get_items() as $item) {
 
 				$_product = get_product( $item['variation_id'] ? $item['variation_id'] : $item['product_id'] );
+
+				if(!isset($values)) {
+					$values = '';
+				}
+
+				if(!isset($cart_item_key)) {
+					$cart_item_key = '';
+				}
+
+				if(!isset($values['product_id'])) {
+					$values['product_id'] = '';
+				}
 
 				echo '
 					<tr class = "' . esc_attr( apply_filters( 'woocommerce_order_table_item_class', 'order_table_item', $item, $order ) ) . '">

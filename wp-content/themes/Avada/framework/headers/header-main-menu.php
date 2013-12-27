@@ -1,6 +1,6 @@
 <?php global $data, $woocommerce; ?>
 <?php if(!$data['ubermenu']): ?>
-<ul id="nav" class="menu">
+<ul id="navigation" class="menu">
 <?php endif; ?>
 	<?php
 	if(!$data['ubermenu']) {
@@ -12,7 +12,7 @@
 	<?php if(class_exists('Woocommerce') && !$data['ubermenu']): ?>
 	<?php if($data['woocommerce_acc_link_main_nav']): ?>
 	<li class="my-account">
-		<a href="<?php echo get_permalink(get_option('woocommerce_myaccount_page_id')); ?>" class="my-account-link">My Account</a>
+		<a href="<?php echo get_permalink(get_option('woocommerce_myaccount_page_id')); ?>" class="my-account-link"><?php _e('My Account', 'Avada'); ?></a>
 		<?php if(!is_user_logged_in()): ?>
 		<div class="login-box">
 			<form action="<?php echo wp_login_url(); ?>" name="loginform" method="post">
@@ -26,7 +26,7 @@
 					<label for="rememberme"><input name="rememberme" type="checkbox" id="rememberme" value="forever"> <?php _e('Remember Me', 'Avada'); ?></label>
 				</p>
 					<p class="submit">
-					<input type="submit" name="wp-submit" id="wp-submit" class="button small default comment-submit" value="Log In">
+					<input type="submit" name="wp-submit" id="wp-submit" class="button small default comment-submit" value="<?php _e('Log In', 'Avada'); ?>">
 					<input type="hidden" name="redirect_to" value="<?php echo $_SERVER['HTTP_REFERER']; ?>">
 					<input type="hidden" name="testcookie" value="1">
 				</p>
@@ -50,7 +50,8 @@
 			<?php foreach($woocommerce->cart->cart_contents as $cart_item): //var_dump($cart_item); ?>
 			<div class="cart-content">
 				<a href="<?php echo get_permalink($cart_item['product_id']); ?>">
-				<?php echo get_the_post_thumbnail($cart_item['product_id'], 'recent-works-thumbnail'); ?>
+				<?php $thumbnail_id = ($cart_item['variation_id']) ? $cart_item['variation_id'] : $cart_item['product_id']; ?>
+				<?php echo get_the_post_thumbnail($thumbnail_id, 'recent-works-thumbnail'); ?>
 				<div class="cart-desc">
 					<span class="cart-title"><?php echo $cart_item['data']->post->post_title; ?></span>
 					<span class="product-quantity"><?php echo $cart_item['quantity']; ?> x <?php echo $woocommerce->cart->get_product_subtotal($cart_item['data'], $cart_item['quantity']); ?></span>
@@ -66,6 +67,17 @@
 		<?php endif; ?>
 	</li>
 	<?php endif; ?>
+	<?php endif; ?>
+	<?php if($data['main_nav_search_icon'] && !$data['ubermenu']): ?>
+	<li class="main-nav-search">
+		<a id="nav-search-link" class="search-link"></a>
+		<div id="nav-search-form" class="main-nav-search-form">
+			<form role="search" method="get" action="<?php echo home_url( '/' ); ?>">
+				<input type="text" value="" name="s" id="s" />
+				<input type="submit" id="searchsubmit" value="&#xf002;" />
+			</form>
+		</div>
+	</li>
 	<?php endif; ?>
 <?php if(!$data['ubermenu']): ?>
 </ul>

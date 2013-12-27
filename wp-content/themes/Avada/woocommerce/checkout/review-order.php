@@ -137,7 +137,7 @@ $available_methods = $woocommerce->shipping->get_available_shipping_methods();
 											else
 												printf('<a class="product-title" href="%s">%s</a>', esc_url( get_permalink( apply_filters('woocommerce_in_cart_product_id', $values['product_id'] ) ) ), apply_filters('woocommerce_in_cart_product_title', $_product->get_title(), $values, $cart_item_key ) );
 
-			                   					echo '<p class="qty">' . __( 'Quantity: ', 'woocommerce' ) . $values['quantity'] . '</p>';
+			                   					echo '<p class="qty">' . __( 'Quantity', 'woocommerce' ) . ': ' . $values['quantity'] . '</p>';
 										?>
 									</div>
 									</td>

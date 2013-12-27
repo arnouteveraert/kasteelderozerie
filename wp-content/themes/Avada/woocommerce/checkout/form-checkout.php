@@ -23,6 +23,11 @@ if ( ! $checkout->enable_signup && ! $checkout->enable_guest_checkout && ! is_us
 	return;
 }
 
+if(get_option('woocommerce_enable_order_comments') != 'no' || get_option('woocommerce_calc_shipping') == 'yes') {
+	$woo_shipping = true;
+} elseif(get_option('woocommerce_enable_order_comments') == 'no' && get_option('woocommerce_calc_shipping') == 'no') {
+	$woo_shipping = false;
+}
 ?>
 
 <ul class="woocommerce-side-nav woocommerce-checkout-nav">
@@ -31,11 +36,13 @@ if ( ! $checkout->enable_signup && ! $checkout->enable_guest_checkout && ! is_us
 			<?php _e('Billing Address' , 'Avada'); ?>
 		</a>
 	</li>
+	<?php if($woo_shipping == true): ?>
 	<li>
 		<a href="#shipping">
 			<?php _e('Shipping Address' , 'Avada'); ?>
 		</a>
 	</li>
+	<?php endif; ?>
 	<li>
 		<a href="#payment-container">
 			<?php _e('Review &amp; Payment' , 'Avada'); ?>
@@ -59,9 +66,11 @@ $get_checkout_url = apply_filters( 'woocommerce_get_checkout_url', $woocommerce-
 
 				<?php do_action( 'woocommerce_checkout_billing' ); ?>
 
-				<a href="#shipping" class="default button small continue-checkout"><?php _e('Continue', 'Avada'); ?></a>
+				<a href="<?php echo ($woo_shipping) ? '#shipping' : '#payment-container'; ?>" class="default button small continue-checkout"><?php _e('Continue', 'Avada'); ?></a>
 
 			</div>
+
+			<?php if($woo_shipping == true): ?>
 
 			<div class="col-2" id="shipping">
 
@@ -70,6 +79,8 @@ $get_checkout_url = apply_filters( 'woocommerce_get_checkout_url', $woocommerce-
 				<a href="#payment-container" class="default button small continue-checkout"><?php _e('Continue', 'Avada'); ?></a>
 
 			</div>
+
+			<?php endif; ?>
 
 		</div>
 

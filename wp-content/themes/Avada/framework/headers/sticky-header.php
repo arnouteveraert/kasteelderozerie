@@ -1,23 +1,33 @@
 <?php global $data,$woocommerce; ?>
 <?php if($data['header_sticky']): ?>
 <header id="header" class="sticky-header">
+<div class="sticky-shadow">
 	<div class="avada-row">
 		<div class="logo">
 			<a href="<?php bloginfo('url'); ?>">
-				<img src="<?php echo $data['logo']; ?>" alt="<?php bloginfo('name'); ?>" class="normal_logo" />
+				<img src="<?php echo $data['logo']; ?>" alt="<?php bloginfo('name'); ?>" data-max-width="<?php echo $data["header_sticky_logo_max_width"]; ?>" class="normal_logo" />
 				<?php if($data['logo_retina'] && $data['retina_logo_width'] && $data['retina_logo_height']): ?>
-
-				<img src="<?php echo $data["logo_retina"]; ?>" alt="<?php bloginfo('name'); ?>" style="max-width:<?php echo $data["retina_logo_width"].$pixels; ?>;max-height:<?php echo $data["retina_logo_height"].$pixels; ?>;" class="retina_logo" />
+				<?php
+				$pixels ="";
+				if(is_numeric($data['retina_logo_width']) && is_numeric($data['retina_logo_height'])):
+				$pixels ="px";
+				endif; ?>
+				<img src="<?php echo $data["logo_retina"]; ?>" alt="<?php bloginfo('name'); ?>" style="width:<?php echo $data["retina_logo_width"].$pixels; ?>;height:<?php echo $data["retina_logo_height"].$pixels; ?>;" data-max-width="<?php echo $data["header_sticky_logo_max_width"]; ?>" class="retina_logo" />
 				<?php endif; ?>
 			</a>
 		</div>
-		<nav id="nav" class="nav-holder">
-		<ul id="nav" class="menu">
-			<?php wp_nav_menu(array('theme_location' => 'main_navigation', 'depth' => 5, 'container' => false, 'menu_id' => 'nav', 'items_wrap' => '%3$s')); ?>
+		<nav id="sticky-nav" class="nav-holder">
+		<ul id="navigation" class="menu">
+			<?php
+			if ( has_nav_menu( 'sticky_navigation' ) ) {
+				wp_nav_menu(array('theme_location' => 'sticky_navigation', 'depth' => 5, 'container' => false, 'menu_id' => 'nav', 'items_wrap' => '%3$s'));
+			} else {
+				wp_nav_menu(array('theme_location' => 'main_navigation', 'depth' => 5, 'container' => false, 'menu_id' => 'nav', 'items_wrap' => '%3$s'));
+			} ?>
 			<?php if(class_exists('Woocommerce')): ?>
 			<?php if($data['woocommerce_acc_link_main_nav']): ?>
 			<li class="my-account">
-				<a href="<?php echo get_permalink(get_option('woocommerce_myaccount_page_id')); ?>" class="my-account-link">My Account</a>
+				<a href="<?php echo get_permalink(get_option('woocommerce_myaccount_page_id')); ?>" class="my-account-link"><?php _e('My Account', 'Avada'); ?></a>
 				<?php if(!is_user_logged_in()): ?>
 				<div class="login-box">
 					<form action="<?php echo wp_login_url(); ?>" name="loginform" method="post">
@@ -31,7 +41,7 @@
 							<label for="rememberme"><input name="rememberme" type="checkbox" id="rememberme" value="forever"> <?php _e('Remember Me', 'Avada'); ?></label>
 						</p>
 							<p class="submit">
-							<input type="submit" name="wp-submit" id="wp-submit" class="button small default comment-submit" value="Log In">
+							<input type="submit" name="wp-submit" id="wp-submit" class="button small default comment-submit" value="<?php _e('Log In', 'Avada'); ?>">
 							<input type="hidden" name="redirect_to" value="<?php echo $_SERVER['HTTP_REFERER']; ?>">
 							<input type="hidden" name="testcookie" value="1">
 						</p>
@@ -72,8 +82,21 @@
 			</li>
 			<?php endif; ?>
 			<?php endif; ?>
+			<?php if($data['main_nav_search_icon']): ?>
+			<li class="main-nav-search">
+				<a id="nav-search-link" class="search-link"></a>
+				<div id="nav-search-form" class="main-nav-search-form">
+					<form role="search" method="get" action="<?php echo home_url( '/' ); ?>">
+						<input type="text" value="" name="s" id="s" />
+						<input type="submit" id="searchsubmit" value="&#xf002;" />
+					</form>
+				</div>
+			</li>
+			<?php endif; ?>
 		</ul>
 		</nav>
+		<div class="mobile-nav-holder"></div>
+	</div>
 	</div>
 </header>
 <?php endif; ?>

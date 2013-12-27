@@ -620,7 +620,9 @@
 		<a href="#" class="settings active"><?php _e('Global Settings', 'LayerSlider') ?></a>
 		<a href="#" class="layers"><?php _e('Slides', 'LayerSlider') ?></a>
 		<a href="#" class="callbacks"><?php _e('Event Callbacks', 'LayerSlider') ?></a>
-		<a href="#" class="support unselectable"><?php _e('Documentation', 'LayerSlider') ?></a>
+		<a href="http://support.kreaturamedia.com/faq/4/layerslider-for-wordpress/" target="_blank" class="faq right unselectable"><?php _e('FAQ', 'LayerSlider') ?></a>
+		<a href="#" class="help right unselectable support"><?php _e('Documentation', 'LayerSlider') ?></a>
+		<span class="right help">Need help? Try these:</span>
 		<a href="#" class="clear unselectable"></a>
 	</div>
 
@@ -801,7 +803,7 @@
 							<td><?php _e('Background color', 'LayerSlider') ?></td>
 							<td>
 								<div class="reset-parent">
-									<input type="text" name="backgroundcolor" value="transparent" class="input ls-colorpicker">
+									<input type="text" name="backgroundcolor" value="" class="input ls-colorpicker">
 								</div>
 							</td>
 							<td class="desc"><?php _e('Background color of LayerSlider. You can use all CSS methods, like hexa colors, rgb(r,g,b) method, color names, etc. Note, that slides with background will cover up the global background image.', 'LayerSlider') ?></td>

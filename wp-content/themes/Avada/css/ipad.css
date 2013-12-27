@@ -217,7 +217,7 @@
 	.rev_slider_wrapper .tparrows,.rev_slider_wrapper:hover .tparrows{display:none !important;}
 	.ls-avada .ls-nav-prev,.ls-avada .ls-nav-next{display:none !important;}
 
-	nav#nav{margin-right:0;}
+	nav#nav,nav#sticky-nav{margin-right:0;}
 
 	#footer .social-networks{width:100%;margin:0 auto;position:relative;left:-11px;}
 
@@ -256,7 +256,7 @@
 	.header-v4 #header{padding-left:20px; padding-right:20px;}
 	.header-v4 #header .logo{float:left;}
 	.header-v4 #small-nav{padding:6px 20px;}
-	.header-v4 #small-nav #nav{width:100%;}
+	.header-v4 #small-nav #navigation{width:100%;}
 
 	.header-v5 .header-social .alignleft{width:100%; margin:0; text-align:center;}
 	.header-v5 .header-social .alignright{width:100%; margin:0; text-align:center;}
@@ -265,7 +265,7 @@
 	.header-v5 .header-social .social-networks li a{margin-bottom:0;}
 	.header-v5 .header-social{padding-bottom:0;}
 	.header-v5 #small-nav{padding:6px 20px;}
-	.header-v5 #small-nav #nav{width:100%;}
+	.header-v5 #small-nav #navigation{width:100%;}
 
 	#wrapper .ei-slider{width:100% !important;}
 

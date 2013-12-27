@@ -59,9 +59,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				<div class="nav-next"><?php next_comments_link( __( 'Next <span class="meta-nav">&rarr;</span>', 'woocommerce' ) ); ?></div>
 			</div>
 		<?php endif;
-
-		echo '<p class="add_review"><a href="#review_form" class="inline how_review_form button comment-submit small" title="' . __( 'Add Your Review', 'woocommerce' ) . '">' . __( 'Add Review', 'woocommerce' ) . '</a></p>';
-
+		echo '<p class="add_review"><a href="#review_form" rel="prettyphotowoo" class="inline show_review_form button comment-submit small" title="' . __( 'Add Your Review', 'woocommerce' ) . '">' . __( 'Add Review', 'woocommerce' ) . '</a></p>';
 		$title_reply = __( 'Add a review', 'woocommerce' );
 
 	else :

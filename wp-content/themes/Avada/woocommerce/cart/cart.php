@@ -26,7 +26,7 @@ global $woocommerce; ?>
 <table class="shop_table cart" cellspacing="0">
 	<thead>
 		<tr>
-			<th class="product-name"><?php _e( 'Item', 'woocommerce' ); ?></th>
+			<th class="product-name"><?php _e( 'Item', 'Avada' ); ?></th>
 			<th class="product-price"><?php _e( 'Price', 'woocommerce' ); ?></th>
 			<th class="product-quantity"><?php _e( 'Quantity', 'woocommerce' ); ?></th>
 			<th class="product-subtotal"><?php _e( 'Total', 'woocommerce' ); ?></th>
@@ -134,20 +134,26 @@ global $woocommerce; ?>
 
 	<div class="one_half">
 
-		<div class="woocommerce-content-box full-width">
+
+		<?php
+		if ( get_option('woocommerce_enable_shipping_calc')=='no' || ! $woocommerce->cart->needs_shipping() ):
+		else:
+		?>
+		<div class="woocommerce-content-box full-width clearfix" style="overflow:visible;">
 
 			<?php woocommerce_shipping_calculator(); ?>
 
 		</div>
+		<?php endif; ?>
 
 		<?php if ( $woocommerce->cart->coupons_enabled() ) { ?>
 
 		<div class="woocommerce-content-box full-width">
 
-		<h2><?php _e( 'Have A Promotional Code?', 'woocommerce' ); ?></h2>
+		<h2><?php _e( 'Have A Promotional Code?', 'Avada' ); ?></h2>
 			<div class="coupon">
 
-				<input name="coupon_code" class="input-text" id="coupon_code" value="" /> <input type="submit" class="button comment-submit small" name="apply_coupon" value="<?php _e( 'Apply', 'woocommerce' ); ?>" />
+				<input name="coupon_code" class="input-text" id="coupon_code" value="" /> <input type="submit" class="button comment-submit small" name="apply_coupon" value="<?php _e( 'Apply', 'Avada' ); ?>" />
 
 				<?php do_action('woocommerce_cart_coupon'); ?>
 
@@ -162,7 +168,7 @@ global $woocommerce; ?>
 	<div class="woocommerce-content-box one_half last cart-totals-container">
 		<?php woocommerce_cart_totals(); ?>
 
-		<input type="submit" class="comment-submit small button" name="update_cart" value="<?php _e( 'Update Shopping Cart', 'woocommerce' ); ?>" /> <input type="submit" class="comment-submit small checkout-button button alt" name="proceed" value="<?php _e( 'Proceed to Checkout', 'woocommerce' ); ?>" />
+		<input type="submit" class="comment-submit small button" name="update_cart" value="<?php _e( 'Update Cart', 'woocommerce' ); ?>" /> <input type="submit" class="comment-submit small checkout-button button alt" name="proceed" value="<?php _e( 'Proceed to Checkout &rarr;', 'woocommerce' ); ?>" />
 	</div>
 
 </div>

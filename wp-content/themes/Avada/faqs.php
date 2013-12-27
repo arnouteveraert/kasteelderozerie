@@ -38,7 +38,7 @@ get_header(); ?>
 		<ul class="faq-tabs clearfix">
 			<li class="active"><a data-filter="*" href="#"><?php echo __('All', 'Avada'); ?></a></li>
 			<?php foreach($portfolio_category as $portfolio_cat): ?>
-			<li><a data-filter=".<?php echo $portfolio_cat->slug; ?>" href="#"><?php echo $portfolio_cat->name; ?></a></li>
+			<li><a data-filter=".<?php echo urldecode($portfolio_cat->slug); ?>" href="#"><?php echo $portfolio_cat->name; ?></a></li>
 			<?php endforeach; ?>
 		</ul>
 		<?php endif; ?>
@@ -57,13 +57,31 @@ get_header(); ?>
 			$item_cats = get_the_terms($post->ID, 'faq_category');
 			if($item_cats):
 			foreach($item_cats as $item_cat) {
-				$item_classes .= $item_cat->slug . ' ';
+				$item_classes .= urldecode($item_cat->slug) . ' ';
 			}
 			endif;
 			?>
 			<div class="faq-item <?php echo $item_classes; ?>">
 				<h5 class="toggle"><a href="#"><span class="arrow"></span><span class="toggle-title"><?php the_title(); ?></span></a></h5>
 				<div class="toggle-content post-content">
+
+			<?php
+			if($data['faq_featured_image']):
+			if(has_post_thumbnail()):
+			?>
+			<div class="flexslider post-slideshow">
+				<ul class="slides">
+				   <?php $attachment_image = wp_get_attachment_image_src( get_post_thumbnail_id(), 'full'); ?>
+					<li>
+						<a href="<?php echo $attachment_image[0]; ?>" rel="prettyPhoto[gallery<?php the_ID(); ?>]" title="<?php echo the_title_attribute('echo=0'); ?>">
+						   <?php the_post_thumbnail('blog-large'); ?>
+				  		</a>;
+					</li>
+				</ul>
+			</div>
+			<?php endif; ?>
+			<?php endif; ?>
+
 					<?php the_content(); ?>
 				</div>
 			</div>

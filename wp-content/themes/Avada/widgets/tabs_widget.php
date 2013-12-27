@@ -30,9 +30,10 @@ class Pyre_Tabs_Widget extends WP_Widget {
 		$show_recent_posts = isset($instance['show_recent_posts']) ? 'true' : 'false';
 		$show_comments = isset($instance['show_comments']) ? 'true' : 'false';
 		$show_tags = isset($instance['show_tags']) ? 'true' : 'false';
-		$orderby = $instance['orderby'];
-
-		if(!$orderby) {
+		
+		if(isset($instance['orderby'])) {
+			$orderby = $instance['orderby'];
+		} else {
 			$orderby = 'Highest Comments';
 		}
 
@@ -87,7 +88,7 @@ class Pyre_Tabs_Widget extends WP_Widget {
 					<?php if($show_recent_posts == 'true'): ?>
 					<div id="tab-recent" class="tab tab_content" style="display: none;">
 						<?php
-						$recent_posts = new WP_Query('showposts='.$posts);
+						$recent_posts = new WP_Query('showposts='.$tags_count);
 						if($recent_posts->have_posts()):
 						?>
 						<ul class="news-list">

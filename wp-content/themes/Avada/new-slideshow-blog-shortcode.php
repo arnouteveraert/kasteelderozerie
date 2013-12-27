@@ -103,30 +103,36 @@
 			) {
 				$size = 'full';
 			}
-			
+
 			if($atts['layout'] == 'grid' || $atts['layout'] == 'timeline') {
 				$size = 'full';
 			}
 			?>
 
-			<?php if($atts['layout'] == 'large' || $atts['layout'] == 'large alternate' || $atts['layout'] == 'grid' || $atts['layout'] == 'timeline'): ?>
 			<?php
 			if(has_post_thumbnail() ||
 			get_post_meta(get_the_ID(), 'pyre_video', true)
 			):
 			?>
+			<?php if($atts['layout'] == 'large' || $atts['layout'] == 'large alternate' || $atts['layout'] == 'grid' || $atts['layout'] == 'timeline'): ?>
 			<div class="flexslider post-slideshow">
+			<?php endif; ?>
+			<?php if($atts['layout'] == 'medium' || $atts['layout'] == 'medium alternate'): ?>
+			<div class="flexslider blog-medium-image floated-post-slideshow">
+			<?php endif; ?>
 				<ul class="slides">
 					<?php if(get_post_meta(get_the_ID(), 'pyre_video', true)): ?>
-					<li class="full-video">
-						<?php echo get_post_meta(get_the_ID(), 'pyre_video', true); ?>
+					<li>
+						<div class="full-video">
+							<?php echo get_post_meta(get_the_ID(), 'pyre_video', true); ?>
+						</div>
 					</li>
 					<?php endif; ?>
 					<?php if(has_post_thumbnail()): ?>
 					<?php $full_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full'); ?>
 					<?php $attachment_data = wp_get_attachment_metadata(get_post_thumbnail_id()); ?>
 					<li>
-						<div class="image">
+						<div class="image" aria-haspopup="true">
 								<?php if($data['image_rollover']): ?>
 								<?php the_post_thumbnail($size); ?>
 								<?php else: ?>
@@ -141,7 +147,7 @@
 											$full_image[0] = get_post_meta($post->ID, 'pyre_video_url', true);
 										}
 										?>
-										<a style="<?php echo $zoom_icon_css; ?>" class="icon gallery-icon" href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php echo $post->ID; ?>]" title="<?php echo get_post_field('post_content', get_post_thumbnail_id()); ?>"><img style="display:none;" alt="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id()); ?>" />Gallery</a>
+										<a style="<?php echo $zoom_icon_css; ?>" class="icon gallery-icon" href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php echo $post->ID; ?>]" title="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id()); ?>"><img style="display:none;" alt="<?php echo get_post_meta(get_post_thumbnail_id(), '_wp_attachment_image_alt', true); ?>" />Gallery</a>
 										<h3><?php the_title(); ?></h3>
 									</div>
 								</div>
@@ -161,75 +167,11 @@
 					<li>
 						<div class="image">
 								<a href="<?php the_permalink(); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo $attachment_data['image_meta']['title']; ?>" /></a>
-								<a style="display:none;" href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php echo $post->ID; ?>]" alt="<?php echo get_post_field('post_excerpt', $attachment_id); ?>" title="<?php echo get_post_field('post_content', $attachment_id); ?>"><img style="display:none;" alt="<?php echo get_post_field('post_excerpt', $attachment_id); ?>" /></a>
+								<a style="display:none;" href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php echo $post->ID; ?>]"  title="<?php echo get_post_field('post_excerpt', $attachment_id); ?>"><img style="display:none;" alt="<?php echo get_post_meta($attachment_id, '_wp_attachment_image_alt', true); ?>" /></a>
 						</div>
 					</li>
 					<?php endif; $i++; endwhile; ?>
 					<?php endif; ?>
 				</ul>
 			</div>
-			<?php endif; ?>
-			<?php endif; ?>
-
-			<?php if($atts['layout'] == 'medium' || $atts['layout'] == 'medium alternate'): ?>
-
-			<?php
-			if(has_post_thumbnail() ||
-			get_post_meta(get_the_ID(), 'pyre_video', true)
-			):
-			?>
-			<div class="flexslider blog-medium-image floated-post-slideshow">
-				<ul class="slides">
-					<?php if(get_post_meta(get_the_ID(), 'pyre_video', true)): ?>
-					<li class="full-video">
-						<?php echo get_post_meta(get_the_ID(), 'pyre_video', true); ?>
-					</li>
-					<?php endif; ?>
-					<?php if(has_post_thumbnail()): ?>
-					<?php $full_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'full'); ?>
-					<?php $attachment_data = wp_get_attachment_metadata(get_post_thumbnail_id()); ?>
-					<li>
-						<div class="image">
-								<?php if($data['image_rollover']): ?>
-								<?php the_post_thumbnail($size); ?>
-								<?php else: ?>
-								<a href="<?php the_permalink(); ?>"><?php the_post_thumbnail($size); ?></a>
-								<?php endif; ?>
-								<div class="image-extras">
-									<div class="image-extras-content">
-										<?php $full_image = wp_get_attachment_image_src(get_post_thumbnail_id($post->ID), 'full'); ?>
-										<a style="<?php echo $link_icon_css; ?>" class="icon link-icon" href="<?php echo $permalink; ?>">Permalink</a>
-										<?php
-										if(get_post_meta($post->ID, 'pyre_video_url', true)) {
-											$full_image[0] = get_post_meta($post->ID, 'pyre_video_url', true);
-										}
-										?>
-										<a style="<?php echo $zoom_icon_css; ?>" class="icon gallery-icon" href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php echo $post->ID; ?>]" title="<?php echo get_post_field('post_content', get_post_thumbnail_id()); ?>"><img style="display:none;" alt="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id()); ?>" />Gallery</a>
-										<h3><?php the_title(); ?></h3>
-									</div>
-								</div>
-						</div>
-					</li>
-					<?php endif; ?>
-					<?php if($data['posts_slideshow']): ?>
-					<?php
-					$i = 2;
-					while($i <= $data['posts_slideshow_number']):
-					$new_attachment_id = kd_mfi_get_featured_image_id('featured-image-'.$i, 'post');
-					if($new_attachment_id):
-					?>
-					<?php $attachment_image = wp_get_attachment_image_src($new_attachment_id, 'blog-medium'); ?>
-					<?php $full_image = wp_get_attachment_image_src($new_attachment_id, 'full'); ?>
-					<?php $attachment_data = wp_get_attachment_metadata($new_attachment_id); ?>
-					<li>
-						<div class="image">
-								<a href="<?php the_permalink(); ?>"><img src="<?php echo $attachment_image[0]; ?>" alt="<?php echo $attachment_data['image_meta']['title']; ?>" /></a>
-								<a style="display:none;" href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery<?php echo $post->ID; ?>]" alt="<?php echo get_post_field('post_excerpt', $new_attachment_id); ?>" title="<?php echo get_post_field('post_content', $new_attachment_id); ?>"><img style="display:none;" alt="<?php echo get_post_field('post_excerpt', $new_attachment_id); ?>" /></a>
-						</div>
-					</li>
-					<?php endif; $i++; endwhile; ?>
-					<?php endif; ?>
-				</ul>
-			</div>
-			<?php endif; ?>
 			<?php endif; ?>

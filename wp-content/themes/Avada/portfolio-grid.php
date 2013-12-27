@@ -70,12 +70,51 @@ if(get_post_meta($post->ID, 'pyre_portfolio_full_width', true) == 'no') {
 				$post_taxs = wp_get_post_terms($gallery_post->ID, 'portfolio_category', array("fields" => "all"));
 				if(is_array($post_taxs) && !empty($post_taxs)) {
 					foreach($post_taxs as $post_tax) {
-						$portfolio_taxs[$post_tax->slug] = $post_tax->name;
+						if(is_array($pcats) && !empty($pcats) && (in_array($post_tax->term_id, $pcats) || in_array($post_tax->parent, $pcats )) )  {
+							$portfolio_taxs[urldecode($post_tax->slug)] = $post_tax->name;
+						}
+
+						if(empty($pcats) || !isset($pcats)) {
+							$portfolio_taxs[urldecode($post_tax->slug)] = $post_tax->name;
+						}
 					}
 				}
 			}
 		}
-		$portfolio_category = get_terms('portfolio_category');
+
+		$all_terms = get_terms('portfolio_category');
+		if( !empty( $all_terms ) && is_array( $all_terms ) ) {
+			foreach( $all_terms as $term ) {
+				if( $portfolio_taxs[urldecode($term->slug)] ) {
+					$sorted_taxs[urldecode($term->slug)] = $term->name;
+				}
+			}
+		}
+
+		$portfolio_taxs = $sorted_taxs;
+
+		if($data['grid_pagination_type'] == 'Infinite Scroll') {
+			$portfolio_category = get_terms('portfolio_category');
+			$portfolio_taxs = array();
+
+			if(empty($pcats) || !isset($pcats)) {
+				foreach($portfolio_category as $portfolio_cat) {
+					$portfolio_taxs[urldecode($portfolio_cat->slug)] = $portfolio_cat->name;
+				}
+			} else {
+				if( is_array($pcats) && !empty( $pcats ) ) {
+					foreach($pcats as $pcat) {
+						$term = get_term( $pcat, 'portfolio_category' );
+						$portfolio_taxs[urldecode($term->slug)] = $term->name;
+					}
+				}
+			}
+
+			if(is_array($portfolio_taxs)) {
+				asort($portfolio_taxs);
+			}
+		}
+
 		if(is_array($portfolio_taxs) && !empty($portfolio_taxs) && get_post_meta($post->ID, 'pyre_portfolio_filters', true) != 'no'):
 		?>
 		<ul class="portfolio-tabs clearfix">
@@ -100,14 +139,14 @@ if(get_post_meta($post->ID, 'pyre_portfolio_full_width', true) == 'no') {
 			$item_cats = get_the_terms($post->ID, 'portfolio_category');
 			if($item_cats):
 			foreach($item_cats as $item_cat) {
-				$item_classes .= $item_cat->slug . ' ';
+				$item_classes .= urldecode($item_cat->slug) . ' ';
 			}
 			endif;
 			$bgClass = '';
 			?>
 			<div class="portfolio-item <?php echo $item_classes; ?> <?php echo $bgClass; ?>">
 				<?php if(has_post_thumbnail()): ?>
-				<div class="image">
+				<div class="image" aria-haspopup="true">
 					<?php if($data['image_rollover']): ?>
 					<?php the_post_thumbnail('full'); ?>
 					<?php else: ?>
@@ -128,8 +167,12 @@ if(get_post_meta($post->ID, 'pyre_portfolio_full_width', true) == 'no') {
 						$zoom_icon_css = 'display:inline-block;';
 					}
 
+					$link_target = "";
 					$icon_url_check = get_post_meta(get_the_ID(), 'pyre_link_icon_url', true); if(!empty($icon_url_check)) {
 						$icon_permalink = get_post_meta($post->ID, 'pyre_link_icon_url', true);
+						if(get_post_meta(get_the_ID(), 'pyre_link_icon_target', true) == "yes") {
+							$link_target = ' target="_blank"';
+						}
 					} else {
 						$icon_permalink = $permalink;
 					}
@@ -137,14 +180,14 @@ if(get_post_meta($post->ID, 'pyre_portfolio_full_width', true) == 'no') {
 					<div class="image-extras">
 						<div class="image-extras-content">
 							<?php $full_image = wp_get_attachment_image_src(get_post_thumbnail_id($post->ID), 'full'); ?>
-							<a style="<?php echo $link_icon_css; ?>" class="icon link-icon" href="<?php echo $icon_permalink; ?>">Permalink</a>
+							<a style="<?php echo $link_icon_css; ?>" class="icon link-icon" href="<?php echo $icon_permalink; ?>"<?php echo $link_target; ?>>Permalink</a>
 							<?php
 							if(get_post_meta($post->ID, 'pyre_video_url', true)) {
 								$full_image[0] = get_post_meta($post->ID, 'pyre_video_url', true);
 							}
 							?>
-							<a style="<?php echo $zoom_icon_css; ?>" class="icon gallery-icon" href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery]" title="<?php echo get_post_field('post_content', get_post_thumbnail_id($post->ID)); ?>"><img style="display:none;" alt="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id($post->ID)); ?>" />Gallery</a>
-							<h3><?php the_title(); ?></h3>
+							<a style="<?php echo $zoom_icon_css; ?>" class="icon gallery-icon" href="<?php echo $full_image[0]; ?>" rel="prettyPhoto[gallery]" title="<?php echo get_post_field('post_excerpt', get_post_thumbnail_id($post->ID)); ?>"><img style="display:none;" alt="<?php echo get_post_meta(get_post_thumbnail_id($post->ID), '_wp_attachment_image_alt', true); ?>" />Gallery</a>
+							<h3 class="entry-title"><?php the_title(); ?></h3>
 							<h4><?php echo get_the_term_list($post->ID, 'portfolio_category', '', ', ', ''); ?></h4>
 						</div>
 					</div>

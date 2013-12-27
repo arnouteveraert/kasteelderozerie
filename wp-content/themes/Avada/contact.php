@@ -2,7 +2,7 @@
 // Template Name: Contact
 get_header(); global $data; ?>
 <?php
-if($data['recaptcha_public'] && $data['recaptcha_private']) {
+if( $data['recaptcha_public'] && $data['recaptcha_private'] && !function_exists( 'recaptcha_get_html' ) ) {
 	require_once('framework/recaptchalib.php');
 }
 //If the form is submitted
@@ -50,8 +50,11 @@ if(isset($_POST['submit'])) {
 	//If there is no error, send the email
 	if(!isset($hasError)) {
 		$emailTo = $data['email_address']; //Put your own email address here
-		$body = "Name: $name \n\nEmail: $email \n\nSubject: $subject \n\nComments:\n $comments";
-		$headers = '';
+		$body = __('Name:', 'Avada')." $name \n\n";
+		$body .= __('Email:', 'Avada')." $email \n\n";
+		$body .= __('Subject:', 'Avada')." $subject \n\n";
+		$body .= __('Comments:', 'Avada')."\n $comments";
+		$headers .= 'Reply-To: ' . $name . ' <' . $email . '>' . "\r\n";
 
 		$mail = wp_mail($emailTo, $subject, $body, $headers);
 		

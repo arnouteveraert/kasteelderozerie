@@ -52,15 +52,22 @@ define( 'THEMEAUTHORURI', $author_uri );
 
 $lang = '';
 if(defined('ICL_LANGUAGE_CODE')) {
-	if(ICL_LANGUAGE_CODE != 'en') {
+	global $sitepress;
+	if(ICL_LANGUAGE_CODE != 'en' && ICL_LANGUAGE_CODE != 'all') {
 		$lang = '_'.ICL_LANGUAGE_CODE;
 		if(!get_option($theme_name.'_options'.$lang)) {
 			update_option($theme_name.'_options'.$lang, get_option($theme_name.'_options'));
+		}
+	} elseif( ICL_LANGUAGE_CODE == 'all' ) {
+		$lang = '_' . $sitepress->get_default_language();
+		if( $sitepress->get_default_language() == 'en' ) {
+			$lang = '';
 		}
 	} else {
 		$lang = '';
 	}
 }
+
 define( 'OPTIONS', $theme_name.'_options'.$lang );
 define( 'BACKUPS',$theme_name.'_backups'.$lang );
 

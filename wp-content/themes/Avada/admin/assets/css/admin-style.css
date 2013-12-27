@@ -32,6 +32,17 @@
 	float: left;
 	margin:10px 20px;
 }
+#of_container #header .docs {
+	float: left;
+	margin:28px 27px;
+	font-size: 14px;
+}
+#of_container #header .docs a {
+	text-decoration: none;
+}
+#of_container #header .link_sep {
+	padding: 0 10px;
+}
 #of_container #js-warning {
     color: red;
     float: left;
@@ -172,7 +183,7 @@ border-radius: 2px;
 #of_container #of-nav li.customcss a {background: url(../images/css.png) no-repeat;}
 #of_container #of-nav li.upgradeoptions a {background: url(../images/upgrade_icon.png) no-repeat;}
 #of_container #of-nav li.elasticslider a {background: url(../images/elasticslider_icon.png) no-repeat;}
-#of_container #of-nav li.socialsharinglinks a {background: url(../images/social_links_icon.png) no-repeat;}
+#of_container #of-nav li.socialmedialinks a {background: url(../images/social_links_icon.png) no-repeat;}
 #of_container #of-nav li.sidebaroptions a {background: url(../images/sidebar.png) no-repeat;}
 #of_container #of-nav li.shortcodesstylingoptions a {background: url(../images/shortcode_styling.png) no-repeat;}
 #of_container #of-nav li.woocommerce a {background: url(../images/woo_theme_options_icon.png) no-repeat;}
@@ -199,6 +210,7 @@ border-radius: 2px;
 	margin: 10px 0 10px 0;
 	padding: 7px 0px;
 	border-bottom: 1px solid #e7e7e7;
+	font-size: 14px;
 }
 #of_container #content .section .controls {
 	float: left;
@@ -248,6 +260,7 @@ border-radius: 2px;
 
 #of_container #content .section-info .controls .of-info h3{
 	text-transform: uppercase;
+	color:#9D9D9D;
 }
 
 #of_container #content .section-info .controls .of-info ._icon { 
@@ -367,7 +380,7 @@ border-radius: 2px;
 	width: 340px;
 }
 #of_container input.checkbox {
-	width: 30px;
+	width: 16px;
 	margin-top:3px;
 }
 #of_container input.of-radio {
@@ -809,6 +822,8 @@ z-index: 4;
 }
 
 .temphide {display:none;}
+
+#content_length #excerpt, #portfolio_content_length #excerpt { height: auto !important; }
 /*-------------------------------------------------------------------------------------------*/
 /* GENERAL STYLES */
 /*-------------------------------------------------------------------------------------------*/
@@ -864,3 +879,12 @@ html body * span.clear, html body * div.clear, html body * li.clear, html body *
 #section-bg_pattern .of-radio-img-img{width:30px; height:30px;}
 #section-header_layout .of-radio-img-img{width:590px; border:3px solid #cccccc !important; margin-bottom:18px !important;}
 #section-header_layout .of-radio-img-selected{border:3px solid #8b8b8b !important;}
+
+@media only screen and (-webkit-max-device-pixel-ratio: 0.95), only screen and (-o-max-device-pixel-ratio: 95/100), only screen and (max-resolution: 90dpi) {
+	#of_container {
+		width: 790px;
+	}
+}
+
+/* Customization */
+#section-status_revslider .controls { display: none; }

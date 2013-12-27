@@ -21,7 +21,7 @@ if ( get_option('woocommerce_enable_shipping_calc')=='no' || ! $woocommerce->car
 
 	<section class="shipping-calculator-form-nohide">
 
-		<p class="form-row form-row-wide custom_select_box">
+		<p class="form-row form-row-wide">
 			<select name="calc_shipping_country" id="calc_shipping_country" class="country_to_state" rel="calc_shipping_state">
 				<option value=""><?php _e( 'Select a country&hellip;', 'woocommerce' ); ?></option>
 				<?php
@@ -31,38 +31,36 @@ if ( get_option('woocommerce_enable_shipping_calc')=='no' || ! $woocommerce->car
 			</select>
 		</p>
 
-		<div class="form-row form-row-wide one_half">
-			<?php
-				$current_cc = $woocommerce->customer->get_shipping_country();
-				$current_r  = $woocommerce->customer->get_shipping_state();
-				$states     = $woocommerce->countries->get_states( $current_cc );
+		<?php
+			$current_cc = $woocommerce->customer->get_shipping_country();
+			$current_r  = $woocommerce->customer->get_shipping_state();
+			$states     = $woocommerce->countries->get_states( $current_cc );
 
-				// Hidden Input
-				if ( is_array( $states ) && empty( $states ) ) {
+			// Hidden Input
+			if ( is_array( $states ) && empty( $states ) ) {
 
-					?><input type="hidden" name="calc_shipping_state" id="calc_shipping_state" placeholder="<?php _e( 'State / county', 'woocommerce' ); ?>" /><?php
+				?><div class="form-row form-row-wide one_half"><input type="hidden" name="calc_shipping_state" id="calc_shipping_state" placeholder="<?php _e( 'State / county', 'woocommerce' ); ?>" /></div><?php
 
-				// Dropdown Input
-				} elseif ( is_array( $states ) ) {
+			// Dropdown Input
+			} elseif ( is_array( $states ) ) {
 
-					?><span>
-						<select name="calc_shipping_state" id="calc_shipping_state" placeholder="<?php _e( 'State / county', 'woocommerce' ); ?>">
-							<option value=""><?php _e( 'Select a state&hellip;', 'woocommerce' ); ?></option>
-							<?php
-								foreach ( $states as $ckey => $cvalue )
-									echo '<option value="' . esc_attr( $ckey ) . '" ' . selected( $current_r, $ckey, false ) . '>' . __( esc_html( $cvalue ), 'woocommerce' ) .'</option>';
-							?>
-						</select>
-					</span><?php
+				?><div class="form-row form-row-wide one_half"><span>
+					<select name="calc_shipping_state" id="calc_shipping_state" placeholder="<?php _e( 'State / county', 'woocommerce' ); ?>">
+						<option value=""><?php _e( 'Select a state&hellip;', 'woocommerce' ); ?></option>
+						<?php
+							foreach ( $states as $ckey => $cvalue )
+								echo '<option value="' . esc_attr( $ckey ) . '" ' . selected( $current_r, $ckey, false ) . '>' . __( esc_html( $cvalue ), 'woocommerce' ) .'</option>';
+						?>
+					</select>
+				</span></div><?php
 
-				// Standard Input
-				} else {
+			// Standard Input
+			} else {
 
-					?><input type="text" class="input-text" value="<?php echo esc_attr( $current_r ); ?>" placeholder="<?php _e( 'State / county', 'woocommerce' ); ?>" name="calc_shipping_state" id="calc_shipping_state" /><?php
+				?><div class="form-row form-row-wide one_half"><input type="text" class="input-text" value="<?php echo esc_attr( $current_r ); ?>" placeholder="<?php _e( 'State / county', 'woocommerce' ); ?>" name="calc_shipping_state" id="calc_shipping_state" /></div><?php
 
-				}
-			?>
-		</div>
+			}
+		?>
 
 		<?php if ( apply_filters( 'woocommerce_shipping_calculator_enable_city', false ) ) : ?>
 

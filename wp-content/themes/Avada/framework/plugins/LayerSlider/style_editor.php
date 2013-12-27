@@ -9,7 +9,31 @@
 
 	// Get contents
 	$contents = file_exists($file) ? file_get_contents($file) : '';
+
+	// Get screen options
+	$lsScreenOptions = get_option('lsScreenOptions', '0');
+	$lsScreenOptions = ($lsScreenOptions == 0) ? array() : $lsScreenOptions;
+	$lsScreenOptions = is_array($lsScreenOptions) ? $lsScreenOptions : unserialize($lsScreenOptions);
+
+	// Defaults
+	if(!isset($lsScreenOptions['showTooltips'])) {
+		$lsScreenOptions['showTooltips'] = 'true';
+	}
 ?>
+
+<div id="ls-screen-options" class="metabox-prefs hidden">
+	<div id="screen-options-wrap" class="hidden">
+		<form id="ls-screen-options-form" action="<?php echo $_SERVER['REQUEST_URI']?>" method="post">
+			<h5>Show on screen</h5>
+			<label>
+				<input type="checkbox" name="showTooltips"<?php echo $lsScreenOptions['showTooltips'] == 'true' ? ' checked="checked"' : ''?>> Tooltips
+			</label>
+		</form>
+	</div>
+	<div id="screen-options-link-wrap" class="hide-if-no-js screen-meta-toggle">
+		<a href="#screen-options-wrap" id="show-settings-link" class="show-settings">Screen Options</a>
+	</div>
+</div>
 
 <div class="wrap">
 
@@ -40,3 +64,8 @@
 		</form>
 	</div>
 </div>
+
+<script type="text/javascript">
+	// Screen options
+	var lsScreenOptions = <?php echo json_encode($lsScreenOptions) ?>;
+</script>

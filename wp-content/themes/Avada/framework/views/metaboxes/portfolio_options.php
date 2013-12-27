@@ -43,6 +43,13 @@ $this->select(	'project_details',
 			);
 ?>
 <?php
+$this->select(	'show_first_featured_image',
+				'Enable First Featured Image On Video Posts',
+				array('no' => 'No', 'yes' => 'Yes'),
+				'(Checking this option will allow the first featured image to show on single post pages.)'
+			);
+?>
+<?php
 $this->textarea(	'video',
 				'Video Embed Code'
 			);
@@ -103,6 +110,13 @@ $this->text(	'link_icon_url',
 			);
 ?>
 <?php
+$this->select(	'link_icon_target',
+				'Open Link Icon URL In New Window',
+				array('no' => 'No','yes' => 'Yes'),
+				''
+			);
+?>
+<?php
 $this->select(	'related_posts',
 				'Show Related Posts',
 				array('yes' => 'Show', 'no' => 'Hide'),
@@ -134,7 +148,7 @@ foreach($sliders as $key => $item):
 endforeach;
 endif;
 
-if($slides){
+if(isset($slides) && $slides){
 foreach($slides as $key => $val){
 	$slides_array[$key] = 'LayerSlider #'.($key);
 }
@@ -178,11 +192,13 @@ $this->select(	'flexslider',
 ?>
 <?php
 global $wpdb;
-$get_sliders = $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.'revslider_sliders');
 $revsliders[0] = 'Select a slider';
-if($get_sliders) {
-	foreach($get_sliders as $slider) {
-		$revsliders[$slider->alias] = $slider->title;
+if(function_exists('rev_slider_shortcode')) {
+	$get_sliders = $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.'revslider_sliders');
+	if($get_sliders) {
+		foreach($get_sliders as $slider) {
+			$revsliders[$slider->alias] = $slider->title;
+		}
 	}
 }
 $this->select(	'revslider',
@@ -216,7 +232,7 @@ $this->select(	'page_bg_layout',
 			);
 ?>
 <h2>Following options only work in boxed mode:</h2>
-<?php $this->upload('page_bg', 'Background Image'); ?>
+<?php $this->upload('page_bg', 'Background Image for Outer Area'); ?>
 <?php
 $this->text(	'page_bg_color',
 				'Background Color (Hex Code)',
@@ -238,7 +254,7 @@ $this->select(	'page_bg_repeat',
 			);
 ?>
 <h2>Following options work in boxed and wide mode:</h2>
-<?php $this->upload('wide_page_bg', 'Background Image'); ?>
+<?php $this->upload('wide_page_bg', 'Background Image for Main Content Area'); ?>
 <?php
 $this->text(	'wide_page_bg_color',
 				'Background Color (Hex Code)',
@@ -296,18 +312,43 @@ $this->select(	'page_title_text',
 				''
 			);
 ?>
+<?php
+$this->text(	'page_title_custom_text',
+				'Page Title Bar Custom Text',
+				''
+			);
+?>
+<?php
+$this->text(	'page_title_custom_subheader',
+				'Page Title Bar Custom Subheader Text',
+				''
+			);
+?>
+<?php
+$this->text(	'page_title_height',
+				'Page Title Bar Height (in pixels "px")',
+				''
+			);
+?>
 <?php $this->upload('page_title_bar_bg', 'Page Title Bar Background'); ?>
 <?php $this->upload('page_title_bar_bg_retina', 'Page Title Bar Background Retina'); ?>
 <?php
 $this->select(	'page_title_bar_bg_full',
 				'100% Background Image',
-				array('no' => 'No', 'yes' => 'Yes'),
+				array('default' => 'Default', 'no' => 'No', 'yes' => 'Yes'),
 				''
 			);
 ?>
 <?php
 $this->text(	'page_title_bar_bg_color',
 				'Page Title Bar Background Color (Hex Code)',
+				''
+			);
+?>
+<?php
+$this->select(	'page_title_bg_parallax',
+				'Parallax Background Image',
+				array('default' => 'Default', 'no' => 'No', 'yes' => 'Yes'),
 				''
 			);
 ?>

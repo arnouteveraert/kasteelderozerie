@@ -2,7 +2,7 @@
 <?php
 global $post;
 if(is_shop()) {
-	$pageID = get_option('woocommerce_shop_page_id'); 
+	$pageID = get_option('woocommerce_shop_page_id');
 } else {
 	$pageID = $post->ID;
 }
@@ -36,7 +36,7 @@ elseif(get_post_meta($pageID, 'pyre_sidebar_position', true) == 'left') {
 		$name = get_post_meta($shop_page_id, 'sbg_selected_sidebar_replacement', true);
 		if($name) {
 			generated_dynamic_sidebar($name[0]);
-		}	
+		}
 	}
 	?>
 </div>

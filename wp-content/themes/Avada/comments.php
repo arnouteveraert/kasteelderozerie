@@ -9,18 +9,18 @@
 		return;
 	}
 ?>
-	
+
 <!-- You can start editing here. -->
 
 <?php if ( have_comments() ) : ?>
 
 	<div class="comments-container">
 		<div class="title"><h2><?php comments_number(__('No Comments', 'Avada'), __('One Comment', 'Avada'), '% '.__('Comments', 'Avada'));?></h2><div class="title-sep-container"><div class="title-sep"></div></div></div>
-		
+
 		<ol class="commentlist">
 			<?php wp_list_comments('callback=avada_comment'); ?>
 		</ol>
-		
+
 		<div class="comments-navigation">
 		    <div class="alignleft"><?php previous_comments_link(); ?></div>
 		    <div class="alignright"><?php next_comments_link(); ?></div>
@@ -42,70 +42,34 @@
 
 <?php if ( comments_open() ) : ?>
 
-<div id="respond" class="section">
-	<div>
-	<div class="title"><h2><?php comment_form_title(__('Leave A Comment', 'Avada'), __('Leave A Comment', 'Avada')); ?></h2><div class="title-sep-container"><div class="title-sep"></div></div></div>
-	<div>
+	<?php
+	function modify_comment_form_fields($fields){
+		$commenter = wp_get_current_commenter();
+		$req       = get_option( 'require_name_email' );
 
-	<div><p class="cancel-comment-reply"><?php cancel_comment_reply_link(); ?></p></div>
+		$fields['author'] = '<div id="comment-input"><input type="text" name="author" id="author" value="'. esc_attr( $commenter['comment_author'] ) .'" placeholder="'. __("Name (required)", "Avada").'" size="22" tabindex="1"'. ( $req ? 'aria-required="true"' : '' ).' class="input-name" />';
 
-	<?php if ( get_option('comment_registration') && !is_user_logged_in() ) : ?>
-	<p><?php printf(__('You must be %slogged in%s to post a comment.', 'Avada'), '<a href="'.wp_login_url( get_permalink() ).'">', '</a>'); ?></p>
-	<?php else : ?>
+		$fields['email'] = '<input type="text" name="email" id="email" value="'. esc_attr( $commenter['comment_author_email'] ) .'" placeholder="'. __("Email (required)", "Avada").'" size="22" tabindex="2"'. ( $req ? 'aria-required="true"' : '' ).' class="input-email"  />';
 
-	<form action="<?php echo get_option('siteurl'); ?>/wp-comments-post.php" method="post">
+		$fields['url'] = '<input type="text" name="url" id="url" value="'. esc_attr( $commenter['comment_author_url'] ) .'" placeholder="'. __("Website", "Avada").'" size="22" tabindex="3" class="input-website" /></div>';
 
-		<?php if ( is_user_logged_in() ) : ?>
+		return $fields;
+	}
+	add_filter('comment_form_default_fields','modify_comment_form_fields');
 
-		<p><?php echo __('Logged in as', 'Avada'); ?> <a href="<?php echo get_option('siteurl'); ?>/wp-admin/profile.php"><?php echo $user_identity; ?></a>. <a href="<?php echo wp_logout_url(get_permalink()); ?>" title="<?php echo __('Log out of this account', 'Avada'); ?>"><?php echo __('Log out &raquo;', 'Avada'); ?></a></p>
+	$comments_args = array(
+		'title_reply' => '<div class="title"><h2>'. __("Leave A Comment", "Avada").'</h2><div class="title-sep-container"><div class="title-sep"></div></div></div>',
+		'title_reply_to' => '<div class="title"><h2>'. __("Leave A Comment", "Avada").'</h2><div class="title-sep-container"><div class="title-sep"></div></div></div>',
+		'must_log_in' => '<p class="must-log-in">' .  sprintf( __( "You must be %slogged in%s to post a comment.", "Avada" ), '<a href="'.wp_login_url( apply_filters( 'the_permalink', get_permalink( ) ) ).'">', '</a>' ) . '</p>',
+		'logged_in_as' => '<p class="logged-in-as">' . __( "Logged in as"," Avada" ).' <a href="' .admin_url( "profile.php" ).'">'.$user_identity.'</a>. <a href="' .wp_logout_url(get_permalink()).'" title="' . __("Log out of this account", "Avada").'">'. __("Log out &raquo;", "Avada").'</a></p>',
+		'comment_notes_before' => '',
+		'comment_notes_after' => '',
+		'comment_field' => '<div id="comment-textarea"><textarea name="comment" id="comment" cols="39" rows="4" tabindex="4" class="textarea-comment" placeholder="'. __("Comment...", "Avada").'"></textarea></div>',
+		'id_submit' => 'comment-submit',
+		'label_submit'=> __("Post Comment", "Avada"),
+	);
 
-		<div id="comment-textarea">
-			
-			<textarea name="comment" id="comment" cols="39" rows="4" tabindex="4" class="textarea-comment" placeholder="<?php echo __('Comment...', 'Avada'); ?>"></textarea>
-		
-		</div>
-		
-		<div id="comment-submit">
-		
-			<p><div class=""><input name="submit" type="submit" id="submit" tabindex="5" value="<?php echo __('Post Comment', 'Avada'); ?>" class="comment-submit  small button green" /></div></p>
-			<?php comment_id_fields(); ?>
-			<?php do_action('comment_form', $post->ID); ?>
-			
-		</div>
-		
-		<?php else : ?>
-
-		<div id="comment-input">
-
-			<input type="text" name="author" id="author" value="<?php echo $comment_author; ?>" placeholder="<?php echo __('Name (required)', 'Avada'); ?>" size="22" tabindex="1" <?php if ($req) echo "aria-required='true'"; ?> class="input-name" />
-
-			<input type="text" name="email" id="email" value="<?php echo $comment_author_email; ?>" placeholder="<?php echo __('Email (required)', 'Avada'); ?>" size="22" tabindex="2" <?php if ($req) echo "aria-required='true'"; ?> class="input-email"  />
-		
-			<input type="text" name="url" id="url" value="<?php echo $comment_author_url; ?>" placeholder="<?php echo __('Website', 'Avada'); ?>" size="22" tabindex="3" class="input-website" />
-			
-		</div>
-		
-		<div id="comment-textarea">
-			
-			<textarea name="comment" id="comment" cols="39" rows="4" tabindex="4" class="textarea-comment" placeholder="<?php echo __('Comment...', 'Avada'); ?>"></textarea>
-		
-		</div>
-		
-		<div id="comment-submit">
-		
-			<p><div><input name="submit" type="submit" id="submit" tabindex="5" value="<?php echo __('Post Comment', 'Avada'); ?>" class="comment-submit small button green" /></div></p>
-			<?php comment_id_fields(); ?>
-			<?php do_action('comment_form', $post->ID); ?>
-			
-		</div>
-
-		<?php endif; ?>
-
-	</form>
-
-	<?php endif; // If registration required and not logged in ?>
-	</div>
-	</div>
-</div>
+	comment_form($comments_args);
+	?>
 
 <?php endif; // if you delete this the sky will fall on your head ?>
