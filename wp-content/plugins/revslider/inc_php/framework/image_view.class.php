@@ -357,7 +357,7 @@
 					$this->effect_Blur($imgHandle,5);
 				break;
 				default:
-					$this->throwError("Effect not supported: <b>{$this->effect}</b>");
+					$this->throwError("Effect not supported: <b>".$this->effect."</b>");
 				break;
 			}
 			

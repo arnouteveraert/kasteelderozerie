@@ -4,11 +4,15 @@
 	$wrapperClass = "";
 	if(GlobalsRevSlider::$isNewVersion == false)
 		 $wrapperClass = " oldwp";
+	
+	$nonce = wp_create_nonce("revslider_actions");
+	
 ?>
 
 <script type="text/javascript">
+	var g_revNonce = "<?php echo $nonce?>";
 	var g_uniteDirPlagin = "<?php echo self::$dir_plugin?>";
-	var g_urlContent = "<?php echo UniteFunctionsWPRev::getUrlContent()?>";
+	var g_urlContent = "<?php echo content_url()."/";?>";
 	var g_urlAjaxShowImage = "<?php echo UniteBaseClassRev::$url_ajax_showimage?>";
 	var g_urlAjaxActions = "<?php echo UniteBaseClassRev::$url_ajax_actions?>";
 	var g_settingsObj = {};
@@ -37,7 +41,7 @@
 <?php self::requireView("system/general_settings_dialog")?>
 
 <div class="tp-plugin-version">&copy; All rights reserved, <a href="http://themepunch.com" target="_blank">Themepunch</a>  ver. <?php echo $revSliderVersion?>
-	<a id="button_upload_plugin" class="greenbutton_normal update_plugin mleft_10" href="javascript:void(0)"><?php _e("Update Plugin",REVSLIDER_TEXTDOMAIN)?></a>
+	<a id="button_upload_plugin" class="button-primary revpurple update_plugin" href="javascript:void(0)"><?php _e("Update Plugin",REVSLIDER_TEXTDOMAIN)?></a>
 </div>
 
 <?php if(GlobalsRevSlider::SHOW_DEBUG == true): ?>
@@ -45,7 +49,7 @@
 	Debug Functions (for developer use only): 
 	<br><br>
 	
-	<a id="button_update_text" class="button-primary" href="javascript:void(0)">Update Text</a>
+	<a id="button_update_text" class="button-primary revpurple" href="javascript:void(0)">Update Text</a>
 	
 <?php endif?>
 

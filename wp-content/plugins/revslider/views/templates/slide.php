@@ -4,10 +4,17 @@
 
 		if($loadGoogleFont == "true"){
 			$googleFont = $slider->getParam("google_font","");
-			if(!empty($googleFont))
-				echo "<link href='http://fonts.googleapis.com/css?family=$googleFont' rel='stylesheet' id='google-font-css' type='text/css' media='all' />";
+			if(!empty($googleFont)){
+				if(is_array($googleFont)){
+					foreach($googleFont as $key => $font){
+						echo RevOperations::getCleanFontImport($font);
+					}
+				}else{
+					echo RevOperations::getCleanFontImport($googleFont);
+				}
+			}
 		}
-
+	
 	?>
 
 	<div class="wrap settings_wrap">
@@ -15,11 +22,17 @@
 	
 		<div class="title_line">
 			<div id="icon-options-general" class="icon32"></div>
-			<h2>
-				<?php _e("Edit Slide",REVSLIDER_TEXTDOMAIN)?>  <?php echo $slideOrder?>, title: <?php echo $slideTitle?>			
-			</h2>
+			<div class="view_title">
+				<?php 
+				if($sliderTemplate == "true"){
+					_e("Edit Template Slide",REVSLIDER_TEXTDOMAIN);
+				}else{
+					_e("Edit Slide",REVSLIDER_TEXTDOMAIN);
+				}
+				?>  <?php echo $slideOrder?>, title: <?php echo $slideTitle?>			
+			</div>
 			
-			<a href="<?php echo GlobalsRevSlider::LINK_HELP_SLIDE?>" class="button-secondary float_right mtop_10 mleft_10" target="_blank"><?php _e("Help",REVSLIDER_TEXTDOMAIN)?></a>			
+			<a href="<?php echo GlobalsRevSlider::LINK_HELP_SLIDE?>" class="button-primary float_right revblue mtop_10 mleft_10" target="_blank"><?php _e("Help",REVSLIDER_TEXTDOMAIN)?></a>			
 			
 		</div>
 
@@ -43,7 +56,7 @@
 					$urlEditSlide = "javascript:void(0)";
 				}
 				
-				$addParams = "class='{$class}'";
+				$addParams = "class='".$class."'";
 				$slideName = str_replace("'", "", $slideName);
 
 			?>
@@ -120,22 +133,31 @@
 
 		<?php require self::getPathTemplate("edit_layers");?>
 		
-
 		
-		<div class="slide_update_button_wrapper">
-			<a href="javascript:void(0)" id="button_save_slide" class="orangebutton"><?php _e("Update Slide",REVSLIDER_TEXTDOMAIN)?></a>
-			<div id="loader_update" class="loader_round" style="display:none;"><?php _e("updating",REVSLIDER_TEXTDOMAIN)?>...</div>
-			<div id="update_slide_success" class="success_message" class="display:none;"></div>
-		</div>
-		<a id="button_close_slide" href="<?php echo $closeUrl?>" class="button-primary"><?php _e("Close",REVSLIDER_TEXTDOMAIN)?></a>
-
+		<a href="javascript:void(0)" id="button_save_slide" class="revgreen button-primary"><div class="updateicon"></div><?php _e("Update Slide",REVSLIDER_TEXTDOMAIN)?></a>		
+		<span id="loader_update" class="loader_round" style="display:none;"><?php _e("updating",REVSLIDER_TEXTDOMAIN)?>...</span>
+		<span id="update_slide_success" class="success_message" class="display:none;"></span>
+		<a href="<?php echo self::getViewUrl(RevSliderAdmin::VIEW_SLIDER,"id=$sliderID");?>" class="button-primary revblue"><?php _e("To Slider Settings",REVSLIDER_TEXTDOMAIN)?></a>
+		<a id="button_close_slide" href="<?php echo $closeUrl?>" class="button-primary revyellow"><div class="closeicon"></div><?php _e("To Slide List",REVSLIDER_TEXTDOMAIN)?></a>
+		<a href="javascript:void(0)" id="button_delete_slide" class="button-primary revred" original-title=""><i class="revicon-trash"></i><?php _e("Delete Slide",REVSLIDER_TEXTDOMAIN)?></a>
 	</div>
 
 	<div class="vert_sap"></div>
 
 	<?php require self::getPathTemplate("dialog_preview_slide");?>
-
+	
+	<!-- FIXED POSITIONED TOOLBOX -->
+		<div class="" style="position:fixed;right:-10px;top:148px;z-index:100;">
+			<a href="javascript:void(0)" id="button_save_slide-tb" class="revgreen button-primary button-fixed" stlye="height: 40px !important;border-radius:5px 0px 0px 5px; -webkit-border-radius:5px 0px 0px 5px;-moz-border-radius:5px 0px 0px 5px; "><div style="font-size:16px; padding:10px 5px;" class="revicon-arrows-ccw"></div></a>
+		</div>
+	
+	<div class="" style="position:fixed;right:-10px;top:100px;z-index:100;">
+		
+	</div>
+	
+	
 	<script type="text/javascript">
+		var g_messageDeleteSlide = "<?php _e("Delete this slide?",REVSLIDER_TEXTDOMAIN)?>";
 		jQuery(document).ready(function(){
 			
 			RevSliderAdmin.initEditSlideView(<?php echo $slideID?>,<?php echo $sliderID?>);

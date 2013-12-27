@@ -45,7 +45,7 @@
 		
 	</div>
 	
-	<div id="dialog_copy_move" data-textclose="<?php _e("Close")?>" data-textupdate="<?php _e("Do It!")?>" title="<?php _e("Copy / move slide",REVSLIDER_TEXTDOMAIN)?>" style="display:none">
+	<div id="dialog_copy_move" data-textclose="<?php _e("Close",REVSLIDER_TEXTDOMAIN)?>" data-textupdate="<?php _e("Do It!",REVSLIDER_TEXTDOMAIN)?>" title="<?php _e("Copy / move slide",REVSLIDER_TEXTDOMAIN)?>" style="display:none">
 		
 		<br>
 		
@@ -54,7 +54,7 @@
 		
 		<br><br>
 		
-		<?php _e("Choose Operation")?> :
+		<?php _e("Choose Operation",REVSLIDER_TEXTDOMAIN)?> :
 		 
 		<input type="radio" id="radio_copy" value="copy" name="copy_move_operation" checked />
 		<label for="radio_copy" style="cursor:pointer;"><?php _e("Copy",REVSLIDER_TEXTDOMAIN)?></label>

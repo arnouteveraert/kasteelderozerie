@@ -6,7 +6,7 @@ class RevSlider_Widget extends WP_Widget {
     	
         // widget actual processes
      	$widget_ops = array('classname' => 'widget_revslider', 'description' => __('Displays a revolution slider on the page') );
-        parent::__construct('rev-slider-widget', __('Revolution Slider'), $widget_ops);
+        parent::__construct('rev-slider-widget', __('Revolution Slider',REVSLIDER_TEXTDOMAIN), $widget_ops);
     }
  
     /**
@@ -19,7 +19,7 @@ class RevSlider_Widget extends WP_Widget {
     	$arrSliders = $slider->getArrSlidersShort();
     	    	
 		if(empty($arrSliders))
-			echo __("No sliders found, Please create a slider");
+			echo __("No sliders found, Please create a slider",REVSLIDER_TEXTDOMAIN);
 		else{
 			
 			$field = "rev_slider";

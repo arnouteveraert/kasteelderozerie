@@ -46,6 +46,10 @@
 							<td class="api-cell1"><?php _e("External Scroll",REVSLIDER_TEXTDOMAIN)?>:</td>
 							<td class="api-cell2"><input type="text" readonly class="api-input" value="<?php echo $api?>.revscroll(offset);"></td>
 						</tr>
+						<tr>
+							<td class="api-cell1"><?php _e("Redraw Slider",REVSLIDER_TEXTDOMAIN)?>:</td>
+							<td class="api-cell2"><input type="text" readonly  class="api-input" value="<?php echo $api?>.revredraw();"></td>
+						</tr>
 						
 					</table>
 					<div class="divide20"></div>

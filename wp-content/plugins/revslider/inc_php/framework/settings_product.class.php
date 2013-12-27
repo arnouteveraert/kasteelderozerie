@@ -82,7 +82,7 @@
 				
 				<input type="hidden" id="<?php echo $setting["id"]?>" name="<?php echo $setting["name"]?>" value="<?php echo $setting["value"]?>" />
 				
-				<input type="button" id="<?php echo $buttonID?>" class='button-image-select <?php echo $class?>' value="Choose Image"></input>
+				<input type="button" id="<?php echo $buttonID?>" class='button-image-select button-primary revblue<?php echo $class?>' value="Choose Image"></input>
 			<?php
 		}
 		
@@ -128,8 +128,9 @@
 			<?php
 		}
 		
-		//-----------------------------------------------------------------------------------------------
-		// draw setting input by type
+		/**
+		 * draw setting input by type
+		 */
 		protected function drawInputs($setting){
 			switch($setting["type"]){
 				case UniteSettingsRev::TYPE_TEXT:
@@ -219,11 +220,13 @@
 				$counter++;
 				$radioID = $setting["id"]."_".$counter;
 				$checked = "";
-				if($value == $setting["value"]) $checked = " checked"; 
+				if($value == $setting["value"]) $checked = " checked='checked'"; 
 				?>
-					<input type="radio" id="<?php echo $radioID?>" value="<?php echo $value?>" name="<?php echo $setting["name"]?>" <?php echo $checked?>/>
-					<label for="<?php echo $radioID?>" style="cursor:pointer;"><?php echo $text?></label>
-					&nbsp; &nbsp;
+					<div class="radio_inner_wrapper">
+						<input type="radio" id="<?php echo $radioID?>" value="<?php echo $value?>" name="<?php echo $setting["name"]?>" <?php echo $checked?>/>
+						<label for="<?php echo $radioID?>" style="cursor:pointer;"><?php echo $text?></label>
+					</div>
+					
 				<?php				
 			endforeach;
 			?>
@@ -250,22 +253,44 @@
 		protected function drawSelectInput($setting){
 			
 			$className = "";
-			if(isset($this->arrControls[$setting["name"]])) $className = "control";
+			if(isset($this->arrControls[$setting["name"]])) 
+				$className = "control";
+				
 			$class = "";
 			if($className != "") $class = "class='".$className."'";
 			
 			$disabled = "";
 			if(isset($setting["disabled"])) $disabled = 'disabled="disabled"';
 			
+			$args = UniteFunctionsRev::getVal($setting, "args");
+			
+			$settingValue = $setting["value"];
+			
+			if(strpos($settingValue,",") !== false)
+				$settingValue = explode(",", $settingValue);
+				
 			?>
-			<select id="<?php echo $setting["id"]?>" name="<?php echo $setting["name"]?>" <?php echo $disabled?> <?php echo $class?>>
-			<?php			
+			<select id="<?php echo $setting["id"]?>" name="<?php echo $setting["name"]?>" <?php echo $disabled?> <?php echo $class?> <?php echo $args?>>
+			<?php
 			foreach($setting["items"] as $value=>$text):
-				$text = __($text,REVSLIDER_TEXTDOMAIN);
+				//set selected
 				$selected = "";
-				if($value == $setting["value"]) $selected = 'selected="selected"';
+				$addition = "";
+				if(strpos($value,"option_disabled") === 0){
+					$addition = "disabled";					
+				}else{
+					if(is_array($settingValue)){
+						if(array_search($value, $settingValue) !== false) 
+							$selected = 'selected="selected"';
+					}else{
+						if($value == $settingValue) 
+							$selected = 'selected="selected"';
+					}
+				}
+									
+				
 				?>
-					<option value="<?php echo $value?>" <?php echo $selected?>><?php echo $text?></option>
+					<option <?php echo $addition?> value="<?php echo $value?>" <?php echo $selected?>><?php echo $text?></option>
 				<?php
 			endforeach
 			?>
@@ -302,8 +327,8 @@
 			$minWidth = UniteFunctionsRev::getVal($setting, "minwidth");
 			
 			if(!empty($minWidth)){
-				$style .= "min-width:{$minWidth}px;";
-				$args .= " data-minwidth='{$minWidth}'";
+				$style .= "min-width:".$minWidth."px;";
+				$args .= " data-minwidth='".$minWidth."'";
 			}
 			
 			?>
@@ -445,9 +470,16 @@
 						<?php if(!empty($required)):?>
 							<span class='setting_required'>*</span>
 						<?php endif?>											
-						<?php if(!empty($description)):?>
-							<span class="description"><?php echo $description?></span>
-						<?php endif?>						
+						<div class="description_container">
+							<?php if(!empty($description)):?>
+								<span class="description"><?php echo $description?></span>
+							<?php endif?>						
+						</div>
+					</td>
+					<td class="description_container_in_td">
+							<?php if(!empty($description)):?>
+								<span class="description"><?php echo $description?></span>
+							<?php endif?>	
 					</td>
 				</tr>								
 			<?php 
@@ -631,7 +663,6 @@
 			</div>
 			<?php 
 		}
-
 		
 	}
 ?>

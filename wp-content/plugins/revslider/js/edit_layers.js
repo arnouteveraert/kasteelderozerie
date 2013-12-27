@@ -1,4 +1,4 @@
-	//ver 3.1
+//ver 3.2
 
 var UniteLayersRev = new function(){
 	
@@ -14,25 +14,45 @@ var UniteLayersRev = new function(){
 	
 	var initText = "Caption Text";
 	
+	//init system vars"
 	//init system vars
 	var t = this;
+	var initArrFontTypes = [];
 	var containerID = "#divLayers";
 	var container;	
 	var arrLayers = {};
 	var id_counter = 0;
 	var initLayers = null;
 	var selectedLayerSerial = -1;
-	var urlCssCaptions = null;
-	var initArrCaptionClasses = [];
+	
 	var sortMode = "time";				//can be "depth" or "time"
-	var g_codemirrorCss = null;
-
+	var layerGeneralParamsStatus = false;
+	
+	//Layer Animations
+	var initLayerAnims = [];
+	var currentAnimationType = 'customin';
+	
 	
 	/**
 	 * set init layers object (from db)
 	 */
 	t.setInitLayersJson = function(jsonLayers){
 		initLayers = jQuery.parseJSON(jsonLayers);
+	}
+	
+	/**
+	 * set init layer animations (from db)
+	 */
+	t.setInitLayerAnim = function(jsonLayersAnims){
+		initLayerAnims = jQuery.parseJSON(jsonLayersAnims);
+	}
+	
+	/**
+	 * update init layer animations (from db)
+	 */
+	t.updateInitLayerAnim = function(layerAnims){
+		initLayerAnims = [];
+		initLayerAnims = layerAnims;
 	}
 	
 	/**
@@ -43,17 +63,10 @@ var UniteLayersRev = new function(){
 	}
 	
 	/**
-	 * set captions url for refreshing when needed
+	 * set init font family types array
 	 */
-	t.setCssCaptionsUrl = function(url){
-		urlCssCaptions = url;
-	}
-	
-	/**
-	 * close css dialog
-	 */
-	t.closeCssDialog = function(){
-		jQuery("#dialog_edit_css").dialog("close");
+	t.setInitFontTypes = function(jsonClasses){
+		initArrFontTypes = jQuery.parseJSON(jsonClasses);
 	}
 	
 	
@@ -68,9 +81,23 @@ var UniteLayersRev = new function(){
 		
 		jQuery("#layer_caption").val("");
 		jQuery("#layer_text").val(html);
-		updateLayerFromFields();
+		t.updateLayerFromFields();
 		
 		jQuery("#dialog_insert_button").dialog("close");
+	}
+	
+	/**
+	 * insert template to editor
+	 */
+	t.insertTemplate = function(text){
+		//console.log(selectedLayerSerial);
+		if(selectedLayerSerial == -1)
+			return(false);
+		
+		jQuery("#layer_text").val(jQuery("#layer_text").val()+'%'+text+'%');
+		t.updateLayerFromFields();
+		
+		jQuery("#dialog_template_insert").dialog("close");
 	}
 	
 	
@@ -111,11 +138,665 @@ var UniteLayersRev = new function(){
 		initMainEvents();
 		initSortbox();
 		initButtons();
-		initEditCSSDialog();
 		initHtmlFields();
 		initAlignTable();
+		scaleImage();
+		//initScaleImage();
+		preparePeviewAnimations();
+		initBackgroundFunctions();
+		prepareAnimateCreator();
+		jQuery('.bgsrcchanger').each(function(){
+			if(jQuery(this).is(':checked'))
+				initSliderMainOptions(jQuery(this));
+		});
+		
+		jQuery('.bgsrcchanger').click(function() {
+			initSliderMainOptions(jQuery(this));
+		});
+		
+		initDisallowCaptionsOnClick();
+	} 
+	
+	var initDisallowCaptionsOnClick = function(){
+		
+		jQuery('.slide_layer.tp-caption a').on('click', function(){
+			return false;
+		});
+		
 	}
 	
+
+
+	function initSliderMainOptions(jQueryObj){
+		var t=jQueryObj;
+		jQuery('.bgsrcchanger-div').each(function() {
+			if (jQuery(this).attr('id') !="tp-bgimagesettings" || (jQuery(this).attr('id') =="tp-bgimagesettings" && t.data('imgsettings')!="on")) {
+				if (jQuery(this).attr('id') =="tp-bgimagesettings")
+					jQuery(this).slideUp(200)						
+				else	
+					jQuery(this).css({display:"none"});
+			}
+		});
+		jQuery('#'+t.data('callid')).css({display:"block"});
+		if (t.data('imgsettings')=="on")
+			jQuery('#tp-bgimagesettings').slideDown(200);
+	}
+	
+	/******************************
+		-	ANIMATION CREATOR	-
+	********************************/
+	
+	function prepareAnimateCreator() {
+		var cic = jQuery('#caption-inout-controll');
+		cic.data('direction',0);
+		
+		jQuery('#caption-inout-controll').click(function() {
+			if (cic.data('direction')==0) {
+				cic.data('direction',1);
+				jQuery('#revshowmetheinanim').removeClass("reviconinaction");
+				jQuery('#revshowmetheoutanim').addClass("reviconinaction");				
+			} else 
+			
+			if (cic.data('direction')==1) {
+				cic.data('direction',2);
+				jQuery('#revshowmetheinanim').addClass("reviconinaction");
+				jQuery('#revshowmetheoutanim').addClass("reviconinaction");				
+				
+			} else 
+			
+			if (cic.data('direction')==2) {
+				cic.data('direction',0);
+				jQuery('#revshowmetheinanim').addClass("reviconinaction");
+				jQuery('#revshowmetheoutanim').removeClass("reviconinaction");				
+				
+			}			
+		});
+		startAnimationInCreator();
+		
+	}
+	
+	function startAnimationInCreator() {
+		stopAnimationInPreview(); 
+		animateCreatorIn();
+	}
+	
+	function killAnimationInCreator() {
+		  var nextcaption = jQuery('#caption_custon_anim_preview');
+		 TweenLite.killTweensOf(nextcaption,false);
+	}
+	
+	function animateCreatorIn() {
+	  				
+						
+					  var nextcaption = jQuery('#caption_custon_anim_preview');
+					  var cic = jQuery('#caption-inout-controll');
+					  
+					  var transx = jQuery('input[name="movex"]').val();
+					  var transy = jQuery('input[name="movey"]').val();
+					  var transz = jQuery('input[name="movez"]').val();					  					  
+
+					  var rotatex = jQuery('input[name="rotationx"]').val();
+					  var rotatey = jQuery('input[name="rotationy"]').val();
+					  var rotatez = jQuery('input[name="rotationz"]').val();					  					  
+
+					  var scalex = jQuery('input[name="scalex"]').val()/100;
+					  var scaley = jQuery('input[name="scaley"]').val()/100;
+
+					  var skewx = jQuery('input[name="skewx"]').val();
+					  var skewy = jQuery('input[name="skewy"]').val();
+					  var opac = jQuery('input[name="captionopacity"]').val()/100;  
+
+					  var tper = jQuery('input[name="captionperspective"]').val();  					  
+					  //var tper = 600;  					  
+					  
+					  var originx = jQuery('input[name="originx"]').val()+"%"; 
+					  var originy = jQuery('input[name="originy"]').val()+"%";
+					  var origin = originx+" "+originy; 				  					  
+					  
+					  var speed = parseInt(jQuery('input[name="captionspeed"]').val(),0);
+					  if (speed<100) speed=100;
+
+					  var easedata = jQuery('#caption-easing-demo').val();
+					  speed=speed/1000;
+					  
+					  var xx = 258, yy=58;
+					  
+					  TweenLite.killTweensOf(nextcaption,false);
+					  TweenLite.fromTo(nextcaption,speed,
+										{ scaleX:scalex,
+										  scaleY:scaley,
+										  rotationX:rotatex,
+										  rotationY:rotatey,
+										  rotationZ:rotatez,
+										  x:transx,
+										  y:transy,
+										  z:transz+1,
+										  skewX:skewx,
+										  skewY:skewy,
+										  left:xx,
+										  top:yy,
+										  opacity:opac,
+										  transformPerspective:tper,
+										  transformOrigin:origin,
+										  visibility:'hidden'},
+
+										{
+										  left:xx,
+										  top:yy,
+										  x:0,
+										  y:0,
+										  scaleX:1,
+										  scaleY:1,
+										  rotationX:0,
+										  rotationY:0,
+										  rotationZ:0,
+										  skewX:0,
+										  skewY:0,
+										  z:1,
+										  visibility:'visible',
+										  opacity:1,
+										  ease:easedata,
+										  overwrite:"all",
+										  onComplete:function() {
+										  	 	if (cic.data('direction')==0) {
+													setTimeout(function() {animateCreatorIn()},700);			
+												} else 
+												
+												if (cic.data('direction')==1 || cic.data('direction')==2) {
+													setTimeout(function() {animateCreatorOut()},700);								
+												} 
+										  }
+										});
+
+   }
+   
+   
+   function animateCreatorOut() {
+	  				
+						
+					  var nextcaption = jQuery('#caption_custon_anim_preview');
+					  var cic = jQuery('#caption-inout-controll');
+					  
+					  var transx = jQuery('input[name="movex"]').val();
+					  var transy = jQuery('input[name="movey"]').val();
+					  var transz = jQuery('input[name="movez"]').val();					  					  
+
+					  var rotatex = jQuery('input[name="rotationx"]').val();
+					  var rotatey = jQuery('input[name="rotationy"]').val();
+					  var rotatez = jQuery('input[name="rotationz"]').val();					  					  
+
+					  var scalex = jQuery('input[name="scalex"]').val()/100;
+					  var scaley = jQuery('input[name="scaley"]').val()/100;
+
+					  var skewx = jQuery('input[name="skewx"]').val();
+					  var skewy = jQuery('input[name="skewy"]').val();
+					  var opac = jQuery('input[name="captionopacity"]').val()/100;  
+
+					  var tper = jQuery('input[name="captionperspective"]').val();  					  
+					  //var tper = 600;  					  
+					  
+					  var originx = jQuery('input[name="originx"]').val()+"%"; 
+					  var originy = jQuery('input[name="originy"]').val()+"%";
+					  var origin = originx+" "+originy; 				  					  
+					  
+					  var speed = parseInt(jQuery('input[name="captionspeed"]').val(),0);
+					  if (speed<100) speed=100;
+
+					  var easedata = jQuery('#caption-easing-demo').val();
+					  speed=speed/1000;
+					  
+					    var xx = 258, yy=58;
+					  
+					  TweenLite.killTweensOf(nextcaption,false);
+					  TweenLite.fromTo(nextcaption,speed,
+										{ left:xx,
+										  top:yy,
+										  x:0,
+										  y:0,
+										  scaleX:1,
+										  scaleY:1,
+										  rotationX:0,
+										  rotationY:0,
+										  rotationZ:0,
+										  skewX:0,
+										  skewY:0,
+										  z:1,
+										  visibility:'visible',
+										  opacity:1
+										 },
+
+										{
+										  
+										  scaleX:scalex,
+										  scaleY:scaley,
+										  rotationX:rotatex,
+										  rotationY:rotatey,
+										  rotationZ:rotatez,
+										  x:transx,
+										  y:transy,
+										  z:transz+1,
+										  skewX:skewx,
+										  skewY:skewy,
+										  left:xx,
+										  top:yy,
+										  opacity:opac,
+										  transformPerspective:tper,
+										  transformOrigin:origin,
+										  ease:easedata,
+										  overwrite:"all",
+										  delay:0.3,
+										  onComplete:function() {
+										  	 	if (cic.data('direction')==0) {
+													setTimeout(function() {animateCreatorIn()},500);
+												} else 
+												
+												if (cic.data('direction')==2) {
+													setTimeout(function() {animateCreatorIn()},500);
+												} 
+												if (cic.data('direction')==1 ) {
+													setTimeout(function() {animateCreatorOut()},500);
+												} 
+												
+										  }
+										});
+
+   }
+	
+									
+	/*********************************
+	-	PREPARE THE ANIMATIONS	-
+	********************************/
+	
+	function preparePeviewAnimations() {
+		
+		jQuery('#preview_looper').click(function() {
+			var pl = jQuery(this);
+			if (pl.hasClass("deactivated")) {
+			    pl.removeClass("deactivated");
+				pl.data('loop',0);			
+				pl.find('.replyinfo').html("ON");								    
+			    setInAnimOfPreview();
+			} else {
+				pl.addClass("deactivated");
+				setInAnimOfPreview();												
+				pl.data('loop',0);
+				pl.find('.replyinfo').html("OFF");												
+			}
+		})
+		
+		var nextcaption = jQuery('#preview_caption_animateme');
+		var startanim = jQuery('#layer_animation');
+		var startspeed = jQuery('#layer_speed');
+		var startease = jQuery('#layer_easing');
+		var endanim = jQuery('#layer_endanimation');
+		var endspeed = jQuery('#layer_endspeed');
+		var endease = jQuery('#layer_endeasing');
+		
+
+		
+		startanim.on('change',function() {
+			setInAnimOfPreview();
+		});
+		startspeed.on('change',function() {
+			setInAnimOfPreview();
+		});
+		startease.on('change',function() {
+			setInAnimOfPreview();
+		});
+		
+		endanim.on('change',function() {
+			setInAnimOfPreview();
+		});
+		endspeed.on('change',function() {
+			setInAnimOfPreview();
+		});
+		endease.on('change',function() {
+			setInAnimOfPreview();
+		});
+	}
+
+										
+	/******************************
+		-	PLAY IN ANIMATION	-
+	********************************/
+	
+	function stopAnimationInPreview() {
+		var nextcaption = jQuery('#preview_caption_animateme');
+		TweenLite.killTweensOf(nextcaption,false);
+		if (nextcaption.data("timer")) clearTimeout(nextcaption.data('timer'));
+		if (nextcaption.data("timera")) clearTimeout(nextcaption.data('timera'));
+	}
+	
+	function setInAnimOfPreview() {
+		var nextcaption = jQuery('#preview_caption_animateme');
+		var startanim = jQuery('#layer_animation');
+		var startspeed = jQuery('#layer_speed');
+		var startease = jQuery('#layer_easing');
+		var endanim = jQuery('#layer_endanimation');
+		var endspeed = jQuery('#layer_endspeed');
+		var endease = jQuery('#layer_endeasing');
+			
+		var anim = startanim.val();
+		var speed = startspeed.val()/1000;
+		var easedata = startease.val();
+
+		TweenLite.killTweensOf(nextcaption,false);
+		if (nextcaption.data("timer")) clearTimeout(nextcaption.data('timer'));
+		if (nextcaption.data("timera")) clearTimeout(nextcaption.data('timera'));
+		var tlop = 0,
+		 	tlxx = 198, tlyy = 82, tlzz = 2,
+		    tlsc = 1,tlro = 0,
+		    sc=1,scX=1,scY= 1,
+		    ro=0,roX=0,roY=0,roZ = 0,
+			skwX=0, skwY = 0,
+			opa = 0,
+			trorig = "center,center",
+			tper = 300,
+			repeatV = 0,
+			yoyoV = false,
+		    repeatdelayV = 0,
+		    calcx = 198,
+		    calcy = 82;
+
+		if (anim == null) anim = "fade";
+		
+		if (anim == "randomrotate") {
+
+							sc = Math.random()*3+1;
+							ro = Math.round(Math.random()*200-100);
+							tlxx = calcx + Math.round(Math.random()*200-100);
+							tlyy = calcy + Math.round(Math.random()*200-100);
+				}
+		if (anim == ('lfr') || anim==('skewfromright')) tlxx = 560;
+		if (anim==('lfl') || anim==('skewfromleft')) tlxx = -100;
+		if (anim==('sfl') | anim==('skewfromleftshort')) tlxx = calcx-50;
+		if (anim==('sfr') | anim==('skewfromrightshort')) tlxx = calcx+50;
+		if (anim==('lft')) tlyy = -50;
+		if (anim==('lfb')) tlyy = 250;
+		if (anim==('sft')) tlyy = calcy-50;
+		if (anim==('sfb')) tlyy = calcy+50;
+		if (anim==('skewfromright') || anim==('skewfromrightshort')) skwX = -85;
+		if (anim==('skewfromleft') || anim==('skewfromleftshort')) skwX =  85;
+		
+		if (anim.split('custom').length>1) {
+			var id = anim.split("-")[1];
+			var params = new Object;
+			params = getCutCustomParams(id);
+			
+			var transx = params.movex;
+			var transy = params.movey;
+			var transz = params.movez;
+			var rotatex = params.rotationx;
+			var rotatey = params.rotationy;
+			var rotatez = params.rotationz;
+			var scalex = params.scalex/100;
+			var scaley = params.scaley/100;
+			var skewx = params.skewx;
+			var skewy =params.skewy;
+			var opac = params.captionopacity/100;
+			var tper = params.captionperspective;
+			//var tper = 600;
+			var originx = params.originx+"%";
+			var originy = params.originy+"%";
+			var origin = originx+" "+originy; 				  					  
+			  
+			 nextcaption.data('newanim',TweenLite.fromTo(nextcaption,speed,
+										{ scaleX:scalex,
+										  scaleY:scaley,
+										  rotationX:rotatex,
+										  rotationY:rotatey,
+										  rotationZ:rotatez,
+										  x:transx,
+										  y:transy,
+										  z:transz+1,
+										  skewX:skewx,
+										  skewY:skewy,
+										  left:calcx,
+										  top:calcy,
+										  opacity:opac,
+										  transformPerspective:tper,
+										  transformOrigin:origin,
+										  visibility:'hidden'},
+
+										{
+										  left:calcx,
+										  top:calcy,
+										  x:0,
+										  y:0,
+										  scaleX:1,
+										  scaleY:1,
+										  rotationX:0,
+										  rotationY:0,
+										  rotationZ:0,
+										  skewX:0,
+										  skewY:0,
+										  z:1,
+										  visibility:'visible',
+										  opacity:1,
+										  ease:easedata,
+										  overwrite:"all",
+										  onComplete:function() {
+								  	nextcaption.data('timera',setTimeout(function() {
+								  		if (!jQuery('#preview_looper').hasClass("deactivated") && jQuery('#preview_looper').data('loop')!=2) setOutAnimOfPreview();
+								  	},500));
+								  }
+								}));
+					
+		} else {
+
+				nextcaption.data('newanim',TweenLite.fromTo(nextcaption,speed,
+								{ scale:sc,
+								  rotation:ro,
+								  rotationX:0,
+								  rotationY:0,
+								  rotationZ:0,
+								  x:0,
+								  y:0,
+								  left:tlxx+'px',
+								  top:tlyy+"px",
+								  opacity:0,
+								  z:1,
+								  skewX:skwX,
+								  skewY:0,
+								  transformPerspective:600,
+								  transformOrigin:"50% 50%",
+								  visibility:'visible'
+								 },
+
+								{ left:calcx+'px',
+								  top:calcy+"px",
+								  scale:1,
+								  skewX:0,
+								  rotation:0,
+								  z:1,
+								  x:0,
+								  y:0,
+								  visibility:'visible',
+								  opacity:1,
+								  ease:easedata,
+								  overwrite:"all",
+								  onComplete:function() {
+								  	nextcaption.data('timera',setTimeout(function() {
+								  		if (!jQuery('#preview_looper').hasClass("deactivated") && jQuery('#preview_looper').data('loop')!=2) setOutAnimOfPreview();
+								  	},500));
+								  }
+								}));
+		}
+
+	}
+	
+	function getCutCustomParams(id) {
+		var params = new Object;
+		jQuery.each(initLayerAnims,function(i,curobj) {
+			if (parseInt(curobj.id,0) == parseInt(id,0)) params = curobj.params;
+		})
+		return params;
+	}
+
+	/******************************
+		-	PLAY OUT ANIMATION	-
+	********************************/
+	
+	function setOutAnimOfPreview() {
+
+		var nextcaption = jQuery('#preview_caption_animateme');
+		var startanim = jQuery('#layer_animation');
+		var startspeed = jQuery('#layer_speed');
+		var startease = jQuery('#layer_easing');
+		var endanim = jQuery('#layer_endanimation');
+		var endspeed = jQuery('#layer_endspeed');
+		var endease = jQuery('#layer_endeasing');
+		
+		var anim = endanim.val();	
+		var speed = endspeed.val()/1000;
+		var easedata = endease.val();
+		var xx = 198;
+		var yy = 82;
+		skwX = 0;
+		
+		if (anim == null) anim = "auto";
+		
+		if (			anim==('fadeout') ||
+						anim==('ltr') ||
+						anim==('ltl') ||
+						anim==('str') ||
+						anim==('stl') ||
+						anim==('ltt') ||
+						anim==('ltb') ||
+						anim==('stt') ||
+						anim==('stb') ||
+						anim==('skewtoright') ||
+						anim==('skewtorightshort') ||
+						anim==('skewtoleft') ||
+						anim==('skewtoleftshort'))
+					{
+
+				if (anim==('skewtoright') || anim==('skewtorightshort'))
+					skwX = 35
+
+				if (anim==('skewtoleft') || anim==('skewtoleftshort'))
+					skwX =  -35
+
+
+
+				if (anim==('ltr') || anim==('skewtoright'))
+					xx=560;
+				else if (anim==('ltl') || anim==('skewtoleft'))
+					xx=-100;
+				else if (anim==('ltt'))
+					yy=-50;
+				else if (anim==('ltb'))
+					yy=250;
+				else if (anim==('str') || anim==('skewtorightshort')) {
+					xx=xx+50;oo=0;
+				} else if (anim==('stl') || anim==('skewtoleftshort')) {
+					xx=xx-50;oo=0;
+				} else if (anim==('stt')) {
+					yy=yy-50;oo=0;
+				} else if (anim==('stb')) {
+					yy=yy+50;oo=0;
+				}
+
+				if (anim==('skewtorightshort'))
+					xx = 400;
+					
+				if (anim==('skewtoleftshort'))
+					xx =  0
+
+				nextcaption.data('newanim',TweenLite.to(nextcaption,speed,
+							{ left:xx,
+							  top:yy,
+							  scale:1,
+							  rotation:0,
+							  skewX:skwX,
+							  opacity:0,
+							  z:2,
+							  overwrite:"auto",
+							  ease:easedata,
+							  onComplete:function() {
+											  	nextcaption.data('timera',setTimeout(function() {
+											  		if (jQuery('#preview_looper').hasClass("deactivated")) 				jQuery('#preview_looper').data('loop',2);
+											  		setInAnimOfPreview();
+											  	},500));
+										}
+							 }));
+		} else 
+		
+		if (anim.split('custom').length>1) {
+			var id = anim.split("-")[1];
+			var params = new Object;
+			params = getCutCustomParams(id);
+			
+			var transx = params.movex;
+			var transy = params.movey;
+			var transz = params.movez;
+			var rotatex = params.rotationx;
+			var rotatey = params.rotationy;
+			var rotatez = params.rotationz;
+			var scalex = params.scalex/100;
+			var scaley = params.scaley/100;
+			var skewx = params.skewx;
+			var skewy =params.skewy;
+			var opac = params.captionopacity/100;
+			var tper = params.captionperspective;
+			//var tper = 600;
+			var originx = params.originx+"%";
+			var originy = params.originy+"%";
+			var origin = originx+" "+originy; 				  					  
+			  
+			 nextcaption.data('newanim',TweenLite.fromTo(nextcaption,speed,
+										{ left:xx,
+										  top:yy,
+										  x:0,
+										  y:0,
+										  scaleX:1,
+										  scaleY:1,
+										  rotationX:0,
+										  rotationY:0,
+										  rotationZ:0,
+										  skewX:0,
+										  skewY:0,
+										  transformPerspective:tper,
+										  transformOrigin:origin,
+										  z:1,
+										  visibility:'visible',
+										  opacity:1,
+										},
+
+										{
+										  scaleX:scalex,
+										  scaleY:scaley,
+										  rotationX:rotatex,
+										  rotationY:rotatey,
+										  rotationZ:rotatez,
+										  x:transx,
+										  y:transy,
+										  z:transz+1,
+										  skewX:skewx,
+										  skewY:skewy,
+										  left:xx,
+										  top:yy,
+										  opacity:opac,
+										  transformPerspective:tper,
+										  transformOrigin:origin,										  
+										  ease:easedata,
+										   onComplete:function() {
+											  	nextcaption.data('timera',setTimeout(function() {
+											  		if (jQuery('#preview_looper').hasClass("deactivated")) 				jQuery('#preview_looper').data('loop',2);
+											  		setInAnimOfPreview();
+											  	},500));
+										}
+							 }));
+					
+		} else {
+			nextcaption.data('newanim').reverse();
+			nextcaption.data('timer',setTimeout(function() {
+		  		  if (jQuery('#preview_looper').hasClass("deactivated")) jQuery('#preview_looper').data('loop',2);												
+				  setInAnimOfPreview();
+			},(speed*1000)+1000))
+		}
+	}
+
 	
 	/**
 	 * init the align table
@@ -169,7 +850,7 @@ var UniteLayersRev = new function(){
 				break;
 			}
 			
-			updateLayerFromFields();
+			t.updateLayerFromFields();
 			
 		});
 		
@@ -180,7 +861,6 @@ var UniteLayersRev = new function(){
 	 * init general events
 	 */
 	var initMainEvents = function(){
-		
 		//unselect layers on container click
 		container.click(unselectLayers);
 	}
@@ -197,46 +877,109 @@ var UniteLayersRev = new function(){
 		});
 		
 		//set layers autocompolete
-		jQuery( "#layer_caption" ).autocomplete({
+		jQuery("#layer_caption").autocomplete({
 			source: initArrCaptionClasses,
 			minLength:0,
-			close:updateLayerFromFields
-		});	
+			close:t.updateLayerFromFields
+		}).data("ui-autocomplete")._renderItem = function(ul, item) {
+			var listItem = jQuery("<li></li>")
+				.data("item.autocomplete", item)
+				.append("<a>" + item.label + "</a>")
+				.appendTo(ul);
+				
+			listItem.attr('original-title', item.value);
+			return listItem;
+		};
 		
 		//open the list on right button
 		jQuery( "#layer_captions_down" ).click(function(event){
 			event.stopPropagation();
+			
+			jQuery("#css_editor_expert").hide();
+			jQuery("#css_editor_wrap").hide();
 			
 			//if opened - close autocomplete
 			if(jQuery('#layer_caption').data("is_open") == true)
 				jQuery( "#layer_caption" ).autocomplete("close");
 			else   //else open autocomplete
 			if(jQuery(this).hasClass("ui-state-active"))
-				jQuery( "#layer_caption" ).autocomplete( "search", "" );
+				jQuery( "#layer_caption" ).autocomplete( "search", "" ).data("ui-autocomplete")._renderItem = function(ul, item) {
+					var listItem = jQuery("<li></li>")
+						.data("item.autocomplete", item)
+						.append("<a>" + item.label + "</a>")
+						.appendTo(ul);
+						
+					listItem.attr('original-title', item.value);
+					return listItem;
+				};
 		});
 		
 		//handle autocomplete close
 		jQuery('#layer_caption').bind('autocompleteopen', function() {
 			jQuery(this).data('is_open',true);
-		});		
-
+			
+			//handle tooltip
+			jQuery('.ui-autocomplete li').tipsy({
+		        delayIn: 70,
+				html: true,
+				gravity:"w",	
+				//trigger:"manual",			
+				title: function(){
+					    setTimeout(function() {
+						    jQuery('.tp-present-caption-small').parent().addClass("tp-present-wrapper-small");
+							jQuery('.tp-present-caption-small').parent().parent().addClass("tp-present-wrapper-parent-small");	
+					    },10)
+						return '<div class="tp-present-caption-small"><div class="tp-caption '+this.getAttribute('original-title')+'">example</div></div>';
+					}
+			});	
+		});			
+		
 		jQuery('#layer_caption').bind('autocompleteclose', function() {
 			jQuery(this).data('is_open',false);
 		});	
 		
-		jQuery("body").click(function(){
-			jQuery( "#layer_caption" ).autocomplete("close");
+		//set layers autocompolete
+		jQuery( "#font_family" ).autocomplete({
+			source: initArrFontTypes,
+			minLength:0,
+			close:t.updateLayerFromFields
+		});
+		
+		//open the list on right button
+		jQuery("#font_family_down").click(function(event){
+			event.stopPropagation();
+			
+			//if opened - close autocomplete
+			if(jQuery('#font_family').data("is_open") == true)
+				jQuery( "#font_family" ).autocomplete("close");
+			else   //else open autocomplete
+			if(jQuery(this).hasClass("ui-state-active"))
+				jQuery( "#font_family" ).autocomplete( "search", "" ).data("ui-autocomplete");
+		});
+		
+		//handle autocomplete close
+		jQuery('#font_family').bind('autocompleteopen', function() {
+			jQuery(this).data('is_open',true);
+		});		
+		
+		jQuery('#font_family').bind('autocompleteclose', function() {
+			jQuery(this).data('is_open',false);
 		});
 		
 		
+		jQuery("body").click(function(){
+			jQuery( "#layer_caption" ).autocomplete("close");
+			jQuery( "#font_family" ).autocomplete("close");
+		});
+		
 		//set events:
-		jQuery("#form_layers select").change(updateLayerFromFields);
-		jQuery("#layer_text").keyup(updateLayerFromFields);
+		jQuery("#form_layers select").change(t.updateLayerFromFields);
+		jQuery("#layer_text").keyup(t.updateLayerFromFields);
 		var pressEnterFields = "#form_layers input, #form_layers textarea";
-		jQuery(pressEnterFields).blur(updateLayerFromFields);
+		jQuery(pressEnterFields).blur(t.updateLayerFromFields);
 		jQuery(pressEnterFields).keypress(function(event){
 			if(event.keyCode == 13)
-				updateLayerFromFields();
+				t.updateLayerFromFields();
 		});
 		
 		//end time validation
@@ -261,6 +1004,71 @@ var UniteLayersRev = new function(){
 			UniteAdminRev.openAddImageDialog("Select Layer Image",function(urlImage){
 				addLayerImage(urlImage);
 			});
+		});
+		
+		// BUILD THE LAYER ANIMATION DIALOG
+		jQuery('#add_customanimation_in').click(function() {
+			if(!UniteLayersRev.getLayerGeneralParamsStatus()) return false; //false if fields are disabled
+			
+			currentAnimationType = 'customin';
+			stopAnimationInPreview();
+			initLayerAnimationDialog();
+			setNewAnimObj();
+		});
+		
+		// BUILD THE LAYER ANIMATION DIALOG
+		jQuery('#add_customanimation_out').click(function() {
+			if(!UniteLayersRev.getLayerGeneralParamsStatus()) return false; //false if fields are disabled
+			
+			currentAnimationType = 'customout';
+			
+			initLayerAnimationDialog();
+			setNewAnimObj();
+		});
+		
+		//build the random animation button
+		jQuery('#set-random-animation').click(function(){
+			jQuery('input[name="movex"]').val((Math.floor(Math.random() * 101) - 50) * 10);
+			jQuery('input[name="movey"]').val((Math.floor(Math.random() * 101) - 50) * 10);
+			jQuery('input[name="movez"]').val((Math.floor(Math.random() * 11) - 5) * 10);
+			
+			jQuery('input[name="rotationx"]').val((Math.floor(Math.random() * 101) - 50) * 10);
+			jQuery('input[name="rotationy"]').val((Math.floor(Math.random() * 101) - 50) * 10);
+			jQuery('input[name="rotationz"]').val((Math.floor(Math.random() * 101) - 50) * 10);
+			
+			jQuery('input[name="scalex"]').val((Math.floor(Math.random() * 31)) * 10);
+			jQuery('input[name="scaley"]').val((Math.floor(Math.random() * 31)) * 10);
+			
+			jQuery('input[name="skewx"]').val(Math.floor(Math.random() * 61));
+			jQuery('input[name="skewy"]').val(Math.floor(Math.random() * 61));
+			
+			jQuery('input[name="captionopacity"]').val(0);
+			jQuery('input[name="captionperspective"]').val(600);
+			
+			jQuery('input[name="originx"]').val((Math.floor(Math.random() * 41) - 20) * 10);
+			jQuery('input[name="originy"]').val((Math.floor(Math.random() * 41) - 20) * 10);
+			
+			jQuery("#caption-movex-slider").slider("value",jQuery('input[name="movex"]').val());
+			jQuery("#caption-movey-slider").slider("value",jQuery('input[name="movey"]').val());
+			jQuery("#caption-movez-slider").slider("value",jQuery('input[name="movez"]').val());
+			jQuery("#caption-rotationx-slider").slider("value",jQuery('input[name="rotationx"]').val());
+			jQuery("#caption-rotationy-slider").slider("value",jQuery('input[name="rotationy"]').val());
+			jQuery("#caption-rotationz-slider").slider("value",jQuery('input[name="rotationz"]').val());
+			jQuery("#caption-scalex-slider").slider("value",jQuery('input[name="scalex"]').val());
+			jQuery("#caption-scaley-slider").slider("value",jQuery('input[name="scaley"]').val());
+			jQuery("#caption-skewx-slider").slider("value",jQuery('input[name="skewx"]').val());
+			jQuery("#caption-skewy-slider").slider("value",jQuery('input[name="skewy"]').val());
+			jQuery("#caption-opacity-slider").slider("value",jQuery('input[name="captionopacity"]').val());
+			jQuery("#caption-perspective-slider").slider("value",jQuery('input[name="captionperspective"]').val());
+			jQuery("#caption-originx-slider").slider("value",jQuery('input[name="originx"]').val());
+			jQuery("#caption-originy-slider").slider("value",jQuery('input[name="originy"]').val());
+			
+			jQuery('input[name="captionspeed"]').val((Math.floor(Math.random() * 11) + 5) * 100);
+			
+			transition = jQuery('#caption-easing-demo option');
+			var random = Math.floor(transition.length * (Math.random() % 1));
+
+			transition.attr('selected',false).eq(random).attr('selected',true);
 		});
 		
 		//add youtube actions:
@@ -341,7 +1149,20 @@ var UniteLayersRev = new function(){
 			
 		});
 		
-
+		//insert button link - open the dialog
+		jQuery("#linkInsertTemplate").click(function(){			
+			if(jQuery(this).hasClass("disabled"))
+				return(false);
+			
+			var buttons = {"Cancel":function(){jQuery("#dialog_template_insert").dialog("close")}}
+			jQuery("#dialog_template_insert").dialog({
+						buttons:buttons,
+						minWidth:500,
+						dialogClass:"tpdialogs",
+						modal:true});
+			
+		});
+		
 	}	
 	
 	
@@ -349,6 +1170,488 @@ var UniteLayersRev = new function(){
 //		Init Function End
 //======================================================
 
+
+	/**************************************
+		-	INIT LAYER ANIMATION DIALOG	-
+	**************************************/
+	function initLayerAnimationDialog() {
+		var curAnimHandle = (currentAnimationType == 'customin') ? jQuery('#layer_animation').val() : jQuery('#layer_endanimation').val();
+		var curAnimText = (currentAnimationType == 'customin') ? jQuery('#layer_animation option:selected').text() : jQuery('#layer_endanimation option:selected').text();
+		var isOriginal = (curAnimHandle.indexOf('custom') > -1) ? false : true;
+		
+		var layerEasing = (currentAnimationType == 'customin') ? jQuery('#layer_easing option:selected').val() : jQuery('#layer_endeasing option:selected').val();
+		var layerSpeed = (currentAnimationType == 'customin') ? jQuery('#layer_speed').val() : jQuery('#layer_endspeed').val();
+		
+		if(layerEasing == 'nothing') layerEasing = jQuery('#layer_easing option:selected').val();
+		jQuery('#caption-easing-demo').val(layerEasing);
+		
+		if(parseInt(layerSpeed) == 0) layerSpeed = 600;
+		jQuery('input[name="captionspeed"]').val(layerSpeed);
+		
+		var cic = jQuery('#caption-inout-controll');
+		cic.data('direction',0);
+		jQuery('#revshowmetheinanim').addClass("reviconinaction");
+		jQuery('#revshowmetheoutanim').removeClass("reviconinaction");
+		
+		//set the transition direction to out
+		if(currentAnimationType == 'customout') jQuery('#caption-inout-controll').click();
+		
+		jQuery("#layeranimeditor_wrap").dialog({
+			modal:true,
+			resizable:false,
+			title:'Layer Animation Editor',
+			minWidth:700,
+			minHeight:500,
+			closeOnEscape:true,
+			open:function () {
+				jQuery(this).closest(".ui-dialog")
+					.find(".ui-button").each(function(i) {
+					   var cl;
+					   if (i==0) cl="revgray";
+					   if (i==1) cl="revgreen";
+					   if (i==2) cl="revred";
+					   if (i==3) cl="revred";
+					   jQuery(this).addClass(cl).addClass("button-primary").addClass("rev-uibuttons");						   						   
+			   })
+			},
+			close:function() {
+				setInAnimOfPreview();	
+			},
+			buttons:{
+				"Save/Change":function(){
+					var animObj = createNewAnimObj();
+					
+					UniteAdminRev.setErrorMessageID("dialog_error_message");						
+					
+					jQuery('#current-layer-handle').text(curAnimText);
+					jQuery('input[name="layeranimation_save_as"]').val(curAnimText);
+					
+					jQuery("#dialog-change-layeranimation").dialog({
+						modal: true,
+						buttons: {
+							'Save as': function() {
+								jQuery("#dialog-change-layeranimation-save-as").dialog({
+									modal: true,
+									buttons: {
+										'Save as new': function(){
+											var id = checkIfAnimExists(jQuery('input[name="layeranimation_save_as"]').val());
+											var update = true;
+											if(id !== false){
+												update = false;
+												if(confirm("Animation already exists, overwrite?")){
+													updateAnimInDb(jQuery('input[name="layeranimation_save_as"]').val(), animObj, id);
+													update = true;
+												}
+											}else{
+												updateAnimInDb(jQuery('input[name="layeranimation_save_as"]').val(), animObj, false);
+											}
+											if(update){
+												jQuery("#dialog-change-layeranimation-save-as").dialog("close");
+												jQuery("#dialog-change-layeranimation").dialog("close");
+												jQuery(this).dialog("close");
+												jQuery("#layeranimeditor_wrap").dialog("close");
+												setInAnimOfPreview();
+											}
+										}
+									}
+								});
+							},
+							Save: function() {
+								var id = checkIfAnimExists(jQuery('input[name="layeranimation_save_as"]').val());
+
+								if(id !== false){
+									if(confirm("Really overwrite animation?")){
+										updateAnimInDb(jQuery('input[name="layeranimation_save_as"]').val(), animObj, id);
+										jQuery(this).dialog("close");
+										jQuery("#layeranimeditor_wrap").dialog("close");
+										setInAnimOfPreview();
+									}
+								}else{
+									updateAnimInDb(jQuery('input[name="layeranimation_save_as"]').val(), animObj, false);
+									jQuery(this).dialog("close");
+									jQuery("#layeranimeditor_wrap").dialog("close");
+									setInAnimOfPreview();										
+								}
+							}
+						}
+					});
+				},
+				"Cancel":function(){
+					jQuery(this).dialog("close");
+					setInAnimOfPreview();						
+				},
+				Delete: function() {
+					
+					if(isOriginal){
+						alert("Default animations can't be deleted");
+					}else{
+						if(confirm('Really delete the animation "'+curAnimText+'"?')){
+							deleteAnimInDb(curAnimHandle);
+							setInAnimOfPreview();										
+							jQuery("#layeranimeditor_wrap").dialog("close");
+						}
+					}
+				}
+			}
+		});
+		
+		jQuery("#caption-rotationx-slider").slider({
+			range: "min",
+			min: -980,
+			max: 980,
+			step:10,
+			slide: function(event, ui) {
+				jQuery('input[name="rotationx"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-rotationy-slider").slider({
+			range: "min",
+			min: -980,
+			max: 980,
+			step:10,
+			slide: function(event, ui) {
+				jQuery('input[name="rotationy"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-rotationz-slider").slider({
+			range: "min",
+			min: -980,
+			max: 980,
+			step:10,
+			slide: function(event, ui) {
+				jQuery('input[name="rotationz"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-movex-slider").slider({
+			range: "min",
+			min: -2000,
+			max: 2000,
+			step:10,
+			slide: function(event, ui) {
+				jQuery('input[name="movex"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-movey-slider").slider({
+			range: "min",
+			min: -2000,
+			max: 2000,
+			step:10,
+			slide: function(event, ui) {
+				jQuery('input[name="movey"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-movez-slider").slider({
+			range: "min",
+			min: -2000,
+			max: 2000,
+			step:10,
+			slide: function(event, ui) {
+				jQuery('input[name="movez"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-scalex-slider").slider({
+			range: "min",
+			min: 0,
+			max: 800,
+			step:10,
+			slide: function(event, ui) {
+				jQuery('input[name="scalex"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-scaley-slider").slider({
+			range: "min",
+			min: 0,
+			max: 800,
+			step:10,
+			slide: function(event, ui) {
+				jQuery('input[name="scaley"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-skewx-slider").slider({
+			range: "min",
+			min: -180,
+			max: 180,
+			step:1,
+			slide: function(event, ui) {
+				jQuery('input[name="skewx"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-skewy-slider").slider({
+			range: "min",
+			min: -180,
+			max: 180,
+			step:1,
+			slide: function(event, ui) {
+				jQuery('input[name="skewy"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-opacity-slider").slider({
+			range: "min",
+			min: -0,
+			max: 100,
+			step:1,
+			slide: function(event, ui) {
+				jQuery('input[name="captionopacity"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-perspective-slider").slider({
+			range: "min",
+			min: -3000,
+			max: 3000,
+			step:1,
+			slide: function(event, ui) {
+				jQuery('input[name="captionperspective"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-originx-slider").slider({
+			range: "min",
+			min: -200,
+			max: 200,
+			step:10,
+			slide: function(event, ui) {
+				jQuery('input[name="originx"]').val(ui.value);					
+				
+			}
+		});
+		
+		jQuery("#caption-originy-slider").slider({
+			range: "min",
+			min: -200,
+			max: 200,
+			step:10,
+			slide: function(event, ui) {
+				jQuery('input[name="originy"]').val(ui.value);					
+				
+			}
+		});
+	}
+	
+	/**
+	 * get the values of custom animation dialog
+	 */
+	var createNewAnimObj = function(){
+		var customAnim = new Object;
+		
+		customAnim['movex'] = jQuery('input[name="movex"]').val();
+		customAnim['movey'] = jQuery('input[name="movey"]').val();
+		customAnim['movez'] = jQuery('input[name="movez"]').val();
+		customAnim['rotationx'] = jQuery('input[name="rotationx"]').val();
+		customAnim['rotationy'] = jQuery('input[name="rotationy"]').val();
+		customAnim['rotationz'] = jQuery('input[name="rotationz"]').val();
+		customAnim['scalex'] = jQuery('input[name="scalex"]').val();
+		customAnim['scaley'] = jQuery('input[name="scaley"]').val();
+		customAnim['skewx'] = jQuery('input[name="skewx"]').val();
+		customAnim['skewy'] = jQuery('input[name="skewy"]').val();
+		customAnim['captionopacity'] = jQuery('input[name="captionopacity"]').val();
+		customAnim['captionperspective'] = jQuery('input[name="captionperspective"]').val();
+		customAnim['originx'] = jQuery('input[name="originx"]').val();
+		customAnim['originy'] = jQuery('input[name="originy"]').val();
+		
+		return customAnim;
+	}
+	
+	/**
+	 * set the values of custom animation dialog
+	 */
+	var setNewAnimObj = function(){
+		var customAnim = new Object;
+		
+		var selectedLayer = (currentAnimationType == 'customin') ? jQuery('#layer_animation').val() : jQuery('#layer_endanimation').val();
+		
+		if(selectedLayer.indexOf('customin') > -1 || selectedLayer.indexOf('customout') > -1){
+			selectedLayer = selectedLayer.replace('customin-', '').replace('customout-', '');
+			
+			if(typeof initLayerAnims === 'object' && !jQuery.isEmptyObject(initLayerAnims)){
+				for(var key in initLayerAnims){
+					if(initLayerAnims[key]['id'] == selectedLayer){
+						customAnim = initLayerAnims[key]['params'];
+					}
+				}
+			}
+		}
+		
+		if(!jQuery.isEmptyObject(customAnim)){
+			jQuery('input[name="movex"]').val(customAnim['movex']);
+			jQuery('input[name="movey"]').val(customAnim['movey']);
+			jQuery('input[name="movez"]').val(customAnim['movez']);
+			jQuery('input[name="rotationx"]').val(customAnim['rotationx']);
+			jQuery('input[name="rotationy"]').val(customAnim['rotationy']);
+			jQuery('input[name="rotationz"]').val(customAnim['rotationz']);
+			jQuery('input[name="scalex"]').val(customAnim['scalex']);
+			jQuery('input[name="scaley"]').val(customAnim['scaley']);
+			jQuery('input[name="skewx"]').val(customAnim['skewx']);
+			jQuery('input[name="skewy"]').val(customAnim['skewy']);
+			jQuery('input[name="captionopacity"]').val(customAnim['captionopacity']);
+			jQuery('input[name="captionperspective"]').val(customAnim['captionperspective']);
+			jQuery('input[name="originx"]').val(customAnim['originx']);
+			jQuery('input[name="originy"]').val(customAnim['originy']);
+		}else{
+			jQuery('input[name="movex"]').val(0);
+			jQuery('input[name="movey"]').val(0);
+			jQuery('input[name="movez"]').val(0);
+			jQuery('input[name="rotationx"]').val(0);
+			jQuery('input[name="rotationy"]').val(0);
+			jQuery('input[name="rotationz"]').val(0);
+			jQuery('input[name="scalex"]').val(100);
+			jQuery('input[name="scaley"]').val(100);
+			jQuery('input[name="skewx"]').val(0);
+			jQuery('input[name="skewy"]').val(0);
+			jQuery('input[name="captionopacity"]').val(0);
+			jQuery('input[name="captionperspective"]').val(600);
+			jQuery('input[name="originx"]').val(50);
+			jQuery('input[name="originy"]').val(50);
+		}
+		
+		jQuery("#caption-movex-slider").slider("value",jQuery('input[name="movex"]').val());
+		jQuery("#caption-movey-slider").slider("value",jQuery('input[name="movey"]').val());
+		jQuery("#caption-movez-slider").slider("value",jQuery('input[name="movez"]').val());
+		jQuery("#caption-rotationx-slider").slider("value",jQuery('input[name="rotationx"]').val());
+		jQuery("#caption-rotationy-slider").slider("value",jQuery('input[name="rotationy"]').val());
+		jQuery("#caption-rotationz-slider").slider("value",jQuery('input[name="rotationz"]').val());
+		jQuery("#caption-scalex-slider").slider("value",jQuery('input[name="scalex"]').val());
+		jQuery("#caption-scaley-slider").slider("value",jQuery('input[name="scaley"]').val());
+		jQuery("#caption-skewx-slider").slider("value",jQuery('input[name="skewx"]').val());
+		jQuery("#caption-skewy-slider").slider("value",jQuery('input[name="skewy"]').val());
+		jQuery("#caption-opacity-slider").slider("value",jQuery('input[name="captionopacity"]').val());
+		jQuery("#caption-perspective-slider").slider("value",jQuery('input[name="captionperspective"]').val());
+		jQuery("#caption-originx-slider").slider("value",jQuery('input[name="originx"]').val());
+		jQuery("#caption-originy-slider").slider("value",jQuery('input[name="originy"]').val());
+	}
+	
+	/**
+	 * check if anim handle already exists
+	 */
+	var checkIfAnimExists = function(handle){
+		if(typeof initLayerAnims === 'object' && !jQuery.isEmptyObject(initLayerAnims)){
+			for(var key in initLayerAnims){
+				if(initLayerAnims[key]['handle'] == handle) return initLayerAnims[key]['id'];
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * update animation in database
+	 */
+	var deleteAnimInDb = function(handle){
+		UniteAdminRev.setErrorMessageID("dialog_error_message");
+		handle = jQuery.trim(handle);
+		if(handle != ''){
+			var animSelect = (currentAnimationType == 'customin') ? jQuery('#layer_animation option') : jQuery('#layer_endanimation option');
+			
+			UniteAdminRev.ajaxRequest("delete_custom_anim",handle,function(response){
+				jQuery("#dialog_success_message").show().html(response.message);
+			
+				//update html select (got from response)
+				t.updateInitLayerAnim(response.customfull);
+				updateLayerAnimsInput(response.customin, 'customin');
+				updateLayerAnimsInput(response.customout, 'customout');
+			});
+		}
+	}
+	
+	/**
+	 * update animation in database
+	 */
+	var updateAnimInDb = function(handle, animObj, id){
+		UniteAdminRev.setErrorMessageID("dialog_error_message");
+		animObj['handle'] = handle;
+		
+		
+		if(id === false){ //create new
+			//insert in database
+			UniteAdminRev.ajaxRequest("insert_custom_anim",animObj,function(response){
+				jQuery("#dialog_success_message").show().html(response.message);
+			
+				//update html select (got from response)
+				t.updateInitLayerAnim(response.customfull);
+				updateLayerAnimsInput(response.customin, 'customin');
+				updateLayerAnimsInput(response.customout, 'customout');
+				
+				selectLayerAnim(handle);
+			});
+			
+		}else{ //update existing
+			
+			//update to database
+			UniteAdminRev.ajaxRequest("update_custom_anim",animObj,function(response){
+				jQuery("#dialog_success_message").show().html(response.message);
+			
+				//update html select (got from response)
+				t.updateInitLayerAnim(response.customfull);
+				updateLayerAnimsInput(response.customin, 'customin');
+				updateLayerAnimsInput(response.customout, 'customout');
+				
+				selectLayerAnim(handle);
+			});
+		}
+	}
+	
+	/**
+	 * update the layer animation inputs
+	 */
+	var selectLayerAnim = function(handle){
+		var animSelect = (currentAnimationType == 'customin') ? jQuery('#layer_animation option') : jQuery('#layer_endanimation option');
+		animSelect.each(function(){
+			if(jQuery(this).text() == handle)
+				jQuery(this).prop('selected', true);
+			else
+				jQuery(this).prop('selected', false);
+		});
+	}
+	
+	/**
+	 * update the layer animation inputs
+	 */
+	var updateLayerAnimsInput = function(customAnim, type){
+		if(type == 'customin'){
+			var animSelect = jQuery('#layer_animation');
+			var animOption = jQuery('#layer_animation option');
+			var current = jQuery('#layer_animation option:selected').val();
+		}else{
+			var animSelect = jQuery('#layer_endanimation');
+			var animOption = jQuery('#layer_endanimation option');
+			var current = jQuery('#layer_endanimation option:selected').val();
+		}
+		
+		animOption.each(function(){
+			if(jQuery(this).val().indexOf(type) > -1){
+				jQuery(this).remove();
+			}
+		});
+		
+		if(typeof customAnim === 'object' && !jQuery.isEmptyObject(customAnim)){
+			for(key in customAnim){
+				animSelect.append(new Option(customAnim[key], key));
+			}
+		}
+		animSelect.val(current);
+	}
+	
 	/**
 	 * show / hide offset row accorging the slide link value
 	 */
@@ -425,10 +1728,10 @@ var UniteLayersRev = new function(){
 	var getFirstStyle = function(){
 		var arrClasses = jQuery( "#layer_caption" ).autocomplete("option","source");
 		var firstStyle = "";
-				
-		if(arrClasses.length == 0)
+		
+		if(arrClasses == null || arrClasses.length == 0)
 			return("");
-				
+			
 		var firstStyle = arrClasses[0];
 		
 		return(firstStyle);
@@ -450,10 +1753,16 @@ var UniteLayersRev = new function(){
 		jQuery("#form_layers label, #form_layers .setting_text, #form_layers .setting_unit").addClass("text-disabled");
 		
 		jQuery("#layer_captions_down").removeClass("ui-state-active").addClass("ui-state-default");
+		jQuery("#font_family_down").removeClass("ui-state-active").addClass("ui-state-default");
 		
 		jQuery("#linkInsertButton").addClass("disabled");
+		jQuery("#linkInsertTemplate").addClass("disabled");
 		
 		jQuery("#align_table").addClass("table_disabled");
+		
+		if(!jQuery('#preview_looper').hasClass("deactivated")) jQuery('#preview_looper').click();
+		
+		layerGeneralParamsStatus = false;
 	}
 	
 	/**
@@ -468,105 +1777,16 @@ var UniteLayersRev = new function(){
 		jQuery("#form_layers label, #form_layers .setting_text, #form_layers .setting_unit").removeClass("text-disabled");
 		
 		jQuery("#layer_captions_down").removeClass("ui-state-default").addClass("ui-state-active");
+		jQuery("#font_family_down").removeClass("ui-state-default").addClass("ui-state-active");
 		
 		jQuery("#linkInsertButton").removeClass("disabled");
+		jQuery("#linkInsertTemplate").removeClass("disabled");
 		
 		jQuery("#align_table").removeClass("table_disabled"); 
-	}
-	
-	/**
-	 * set code mirror editor
-	 */
-	t.setCodeMirrorEditor = function(){
-		g_codemirrorCss = CodeMirror.fromTextArea(document.getElementById("textarea_edit"), {});
-	}
-	
-	/**
-	 * init dialog actions
-	 */
-	var initEditCSSDialog = function(){
-		jQuery("#button_edit_css").click(function(){
-			
-			UniteAdminRev.ajaxRequest("get_captions_css","",function(response){
-				
-				//update textarea with css:
-				var cssData = response.data;
-				
-				if(g_codemirrorCss != null)
-					g_codemirrorCss.setValue(cssData);
-				else{
-					jQuery("#textarea_edit").val(cssData);
-					setTimeout('UniteLayersRev.setCodeMirrorEditor()',500);
-				}
-								
-				//open captions edit dialog	
-				var buttons = {	
-						
-				//---- update button action:
-						
-				"Update":function(){
-					
-						UniteAdminRev.setErrorMessageID("dialog_error_message");						
-						var data;
-						if(g_codemirrorCss != null)
-							data = g_codemirrorCss.getValue();
-						else
-							data = jQuery("#textarea_edit").val();
-						
-						UniteAdminRev.ajaxRequest("update_captions_css",data,function(response){
-							jQuery("#dialog_success_message").show().html(response.message);
-							setTimeout("UniteLayersRev.closeCssDialog()",500);
-							
-							if(urlCssCaptions)
-								UniteAdminRev.loadCssFile(urlCssCaptions,"rs-plugin-captions-css");
-							
-							//update html select (got as "data" from response)
-							updateCaptionsInput(response.arrCaptions);
-						});
-				},
-				
-				//---- restore original button action:
-				
-				"Restore Original":function(){
-					UniteAdminRev.setErrorMessageID("dialog_error_message");
-					UniteAdminRev.ajaxRequest("restore_captions_css","",function(response){						
-						jQuery("#dialog_success_message").show().html("css content restored, please press update");
-						
-						if(g_codemirrorCss != null)
-							g_codemirrorCss.setValue(response.data);
-						else
-							jQuery("#textarea_edit").val(response.data);
-						
-						setTimeout("jQuery('#dialog_success_message').hide()",1000);
-					});					
-				},
-						
-						//----- cancel button action:
-				"Cancel":function(){t.closeCssDialog()}
-				};
-				
-				//lock scrollbars
-				jQuery('body').css({'overflow':'hidden'});
-				
-				//hide dialog error message
-				jQuery("#dialog_error_message").hide();
-				jQuery("#dialog_success_message").hide();
-				
-				//open the dialog
-				jQuery("#dialog_edit_css").dialog({
-					buttons:buttons,
-					minWidth:800,
-					modal:true,
-					dialogClass:"tpdialogs",
-					close: function(event, ui){
-						//return scrollbars
-						jQuery('body').css({'overflow':'auto'});
-			        }
-				});
-				
-			});	//main ajax request
-			
-		});	//edit css button click	
+
+		if(jQuery('#preview_looper').hasClass("deactivated")) jQuery('#preview_looper').click();
+		
+		layerGeneralParamsStatus = true;
 	}
 	
 	
@@ -583,25 +1803,35 @@ var UniteLayersRev = new function(){
 		};		
 	}
 	
-	
-	/**
-	 * update the select html, set selected option, and update events.
-	 */
-	var updateCaptionsInput = function(arrCaptions){
-		
-		jQuery("#layer_caption").autocomplete("option","source",arrCaptions);
-		
-	}
-	
-	
 	/**
 	 * get layers array
 	 */
 	t.getLayers = function(){
 		if(selectedLayerSerial != -1)
-			updateLayerFromFields();
+			t.updateLayerFromFields();
+		
+		//update sizes in images
+		updateLayersImageSizes();
 		
 		return(arrLayers);
+	}
+	
+	
+	/**
+	 * update image sizes
+	 */
+	var updateLayersImageSizes = function(){
+		
+		for (serial in arrLayers){
+			var layer = arrLayers[serial];
+			if(layer.type == "image"){
+				var htmlLayer = getHtmlLayerFromSerial(serial);
+				var objUpdate = {};
+				objUpdate.width = htmlLayer.width(); 
+				objUpdate.height = htmlLayer.height();
+				updateLayer(serial,objUpdate);
+			}
+		}
 	}
 	
 	
@@ -609,20 +1839,20 @@ var UniteLayersRev = new function(){
 	 * refresh layer events
 	 */
 	var refreshEvents = function(serial){
+		var layer = getHtmlLayerFromSerial(serial);	
 		
 		//update layer events.
-		var layer = getHtmlLayerFromSerial(serial);		
 		layer.draggable({
 					drag: onLayerDrag,	//set ondrag event
 					grid: [1,1]	//set the grid to 1 pixel
 				});
-
 		
 		layer.click(function(event){
 			setLayerSelected(serial);
 			event.stopPropagation();
+			setInAnimOfPreview();
 		});
-				
+		
 	}
 
 	
@@ -717,29 +1947,37 @@ var UniteLayersRev = new function(){
 		var zIndex = Number(objLayer.order)+1;
 		
 		var style = "z-index:"+zIndex+";position:absolute;";
+		if(type == "image") style += "line-height:0;";
 		var html = '<div id="slide_layer_' + serial + '" style="' + style + '" class="slide_layer tp-caption '+objLayer.style+'" >';		
 		
 		//add layer specific html
 		switch(type){
 			case "image":
-				html += '<img src="'+objLayer.image_url+'" alt="'+objLayer.text+'"></img>';
+				var addStyle = '';
+				if(objLayer.scaleX != "") addStyle += "width: " + objLayer.scaleX + "px; ";
+				if(objLayer.scaleY != "") addStyle += "height: " + objLayer.scaleY + "px;";
+				
+				html += '<img src="'+objLayer.image_url+'" alt="'+objLayer.alt+'" style="'+addStyle+'"></img>';
 			break;
 			default:
 			case "text":
 				html += objLayer.text;	
 			break;
 			case "video":
-				
 				var styleVideo = "width:"+objLayer.video_width+"px;height:"+objLayer.video_height+"px;";
-				
+				if(typeof (objLayer.video_data) !== "undefined"){
+					var useImage = (jQuery.trim(objLayer.video_data.previewimage) != '') ? objLayer.video_data.previewimage : objLayer.video_image_url;
+				}else{
+					var useImage = objLayer.video_image_url;
+				}
 				switch(objLayer.video_type){
 					case "youtube":						
 					case "vimeo":
-						styleVideo += ";background-image:url("+objLayer.video_image_url+");";
+						styleVideo += ";background-image:url("+useImage+");";
 					break;
 					case "html5":
-						if(objLayer.video_image_url !== undefined && objLayer.video_image_url != "")
-							styleVideo += ";background-image:url("+objLayer.video_image_url+");";
+						if(useImage !== undefined && useImage != "")
+							styleVideo += ";background-image:url("+useImage+");";
 					break;
 				}
 				
@@ -923,7 +2161,7 @@ var UniteLayersRev = new function(){
 			objLayer.hiddenunder = "";	
 
 		if(objLayer.resizeme == undefined)			
-			objLayer.resizeme = "";		
+			objLayer.resizeme = "true";		
 		
 		//set image link
 		if(objLayer.link == undefined)
@@ -979,6 +2217,14 @@ var UniteLayersRev = new function(){
 		if(objLayer.corner_right == undefined)			
 			objLayer.corner_right = "nothing";
 		
+		if(objLayer.width == undefined)			
+			objLayer.width = -1;
+		objLayer.width = Number(objLayer.width);
+
+		if(objLayer.height == undefined)			
+			objLayer.height = -1;
+		objLayer.height = Number(objLayer.height);
+		
 		//round position
 		objLayer.top = Math.round(objLayer.top);
 		objLayer.left = Math.round(objLayer.left);
@@ -994,7 +2240,7 @@ var UniteLayersRev = new function(){
 		var objHtmlLayer = getHtmlLayerFromSerial(id_counter);
 		
 		//update layer position
-		updateHtmlLayerPosition(objHtmlLayer,objLayer.top,objLayer.left,objLayer.align_hor,objLayer.align_vert);
+		updateHtmlLayerPosition(isInit,objHtmlLayer,objLayer,objLayer.top,objLayer.left,objLayer.align_hor,objLayer.align_vert);
 		
 		//update corners
 		updateHtmlLayerCorners(objHtmlLayer,objLayer);
@@ -1092,6 +2338,7 @@ var UniteLayersRev = new function(){
 		
 		addLayer(obj2);
 		redrawSortbox();
+		initDisallowCaptionsOnClick();
 	}
 	
 	
@@ -1223,11 +2470,21 @@ var UniteLayersRev = new function(){
 	/**
 	 * update html layer position
 	 */
-	var updateHtmlLayerPosition = function(htmlLayer,top,left,align_hor,align_vert){
+	var updateHtmlLayerPosition = function(isInit,htmlLayer,objLayer,top,left,align_hor,align_vert){
 		
 		//update positions by align
 		var width = htmlLayer.width();
 		var height = htmlLayer.height();
+		
+		//get sizes from saved if on get
+		if(isInit == true && objLayer.type == "image"){
+			if(objLayer.width != -1)
+				width = objLayer.width;
+			
+			if(objLayer.height != -1)
+				height = objLayer.height;
+		}
+		
 		var totalWidth = container.width();
 		var totalHeight = container.height();
 		
@@ -1286,15 +2543,16 @@ var UniteLayersRev = new function(){
 		if(objLayer.type != "video")
 			return(objLayer);
 		
-		if(objLayer.video_data && objLayer.video_data.fullwidth && objLayer.video_data.fullwidth == true){
-			objLayer.top = 0;
-			objLayer.left = 0;
-			objLayer.align_hor = "left";
-			objLayer.align_vert = "top";
-			objLayer.video_width = container.width();
-			objLayer.video_height = container.height();
+		if(typeof (objLayer.video_data) !== "undefined"){
+			if(objLayer.video_data && objLayer.video_data.fullwidth && objLayer.video_data.fullwidth == true){
+				objLayer.top = 0;
+				objLayer.left = 0;
+				objLayer.align_hor = "left";
+				objLayer.align_vert = "top";
+				objLayer.video_width = container.width();
+				objLayer.video_height = container.height();
+			}
 		}
-				
 		return(objLayer);
 	}
 	
@@ -1342,7 +2600,7 @@ var UniteLayersRev = new function(){
 		}
 		
 		//set position
-		updateHtmlLayerPosition(htmlLayer,objLayer.top,objLayer.left,objLayer.align_hor,objLayer.align_vert);
+		updateHtmlLayerPosition(false,htmlLayer,objLayer,objLayer.top,objLayer.left,objLayer.align_hor,objLayer.align_vert);
 		
 		updateCrossIconPosition(htmlLayer,objLayer);		
 	}
@@ -1351,7 +2609,7 @@ var UniteLayersRev = new function(){
 	/**
 	 * update layer from html fields
 	 */
-	var updateLayerFromFields = function(){
+	t.updateLayerFromFields = function(){
 		
 		if(selectedLayerSerial == -1){
 			UniteAdminRev.showErrorMessage("No layer selected, can't update.");
@@ -1373,7 +2631,15 @@ var UniteLayersRev = new function(){
 		objUpdate.easing = jQuery("#layer_easing").val();
 		objUpdate.link_slide = jQuery("#layer_slide_link").val();
 		objUpdate.scrollunder_offset = jQuery("#layer_scrolloffset").val();		
+		objUpdate.alt = jQuery("#layer_alt").val();	
+		objUpdate.scaleX = jQuery("#layer_scaleX").val();
+		objUpdate.scaleY = jQuery("#layer_scaleY").val();
+		objUpdate.scaleProportional = jQuery("#layer_proportional_scale").is(":checked");	
 		
+		objUpdate.attrID = jQuery("#layer_id").val();
+		objUpdate.attrClasses = jQuery("#layer_classes").val();
+		objUpdate.attrTitle = jQuery("#layer_title").val();
+		objUpdate.attrRel = jQuery("#layer_rel").val();
 		objUpdate.link = jQuery("#layer_image_link").val();
 		objUpdate.link_open_in = jQuery("#layer_link_open_in").val();
 		
@@ -1397,6 +2663,10 @@ var UniteLayersRev = new function(){
 		//update the timeline with the new data
 		updateCurrentLayerTimeline();
 		
+		UniteCssEditorRev.setCssPreviewLive();
+		
+		//event on element for href
+		initDisallowCaptionsOnClick();
 	}
 	
 	
@@ -1405,7 +2675,7 @@ var UniteLayersRev = new function(){
 	 */
 	var redrawLayerHtml = function(serial){
 		
-		var objLayer = getLayer(serial);		
+		var objLayer = getLayer(serial);
 		var html = makeLayerHtml(serial,objLayer)
 		var htmlInner = jQuery(html).html();
 		var htmlLayer = getHtmlLayerFromSerial(serial);
@@ -1422,6 +2692,14 @@ var UniteLayersRev = new function(){
 		
 		jQuery("#layer_caption").val(objLayer.style);
 		jQuery("#layer_text").val(objLayer.text);
+		jQuery("#layer_alt").val(objLayer.alt);
+		jQuery("#layer_scaleX").val(objLayer.scaleX);
+		jQuery("#layer_scaleY").val(objLayer.scaleY);
+		
+		if(objLayer.scaleProportional == "true" || objLayer.scaleProportional == true)
+			jQuery("#layer_proportional_scale").prop("checked",true);
+		else
+			jQuery("#layer_proportional_scale").prop("checked",false);
 		jQuery("#layer_top").val(objLayer.top);
 		jQuery("#layer_left").val(objLayer.left);
 		jQuery("#layer_animation").val(objLayer.animation);
@@ -1461,6 +2739,11 @@ var UniteLayersRev = new function(){
 		jQuery("#align_table a").removeClass("selected");
 		jQuery(alignClass).addClass("selected");
 		
+		jQuery("#layer_id").val(objLayer.attrID);
+		jQuery("#layer_classes").val(objLayer.attrClasses);
+		jQuery("#layer_title").val(objLayer.attrTitle);
+		jQuery("#layer_rel").val(objLayer.attrRel);
+		
 		//show / hide go under slider offset row
 		showHideOffsetRow();
 	}
@@ -1485,6 +2768,11 @@ var UniteLayersRev = new function(){
 		hideLayerTimeline();
 		
 		//reset elements
+		jQuery("#layer_alt_row").hide();
+		jQuery("#layer_scale_title_row").hide();
+		jQuery("#layer_scaleX_row").hide();
+		jQuery("#layer_scaleY_row").hide();
+		jQuery("#layer_proportional_scale_row").hide();
 		jQuery("#button_edit_video_row").hide();
 		jQuery("#button_change_image_source_row").hide();
 		jQuery("#layer_text").css("height","80px");
@@ -1527,6 +2815,7 @@ var UniteLayersRev = new function(){
 		switch(objLayer.type){
 			case "video":	//show edit video button
 				jQuery("#linkInsertButton").addClass("disabled");
+				jQuery("#linkInsertTemplate").addClass("disabled");
 				jQuery("#button_edit_video_row").show();
 				
 				jQuery("#layer_text").css("height","25px");
@@ -1534,8 +2823,15 @@ var UniteLayersRev = new function(){
 			case "image":	
 				//disable the insert button
 				jQuery("#linkInsertButton").addClass("disabled");
+				jQuery("#linkInsertTemplate").addClass("disabled");
 				
 				//show / hide some elements
+				jQuery("#layer_alt_row").show();
+				jQuery("#layer_scale_title_row").show();
+				jQuery("#layer_scaleX_row").show();
+				jQuery("#layer_scaleY_row").show();
+				//initScaleImage();
+				jQuery("#layer_proportional_scale_row").show();
 				jQuery("#button_change_image_source_row").show();
 				jQuery("#layer_text").css("height","25px");
 				jQuery("#layer_image_link_row").show();
@@ -1552,7 +2848,12 @@ var UniteLayersRev = new function(){
 		}
 		
 		//hide image layer related fields
-		if(objLayer.type != "image"){			
+		if(objLayer.type != "image"){
+			jQuery("#layer_alt_row").hide();
+			jQuery("#layer_scale_title_row").hide();
+			jQuery("#layer_scaleX_row").hide();
+			jQuery("#layer_scaleY_row").hide();
+			jQuery("#layer_proportional_scale_row").hide();
 			jQuery("#layer_image_link_row").hide();
 			jQuery("#layer_link_open_in_row").hide();
 			jQuery("#button_change_image_source_row").hide();
@@ -1580,9 +2881,8 @@ var UniteLayersRev = new function(){
 		updateCurrentLayerTimeline();
 		
 		//set focus to text editor
-		jQuery("#layer_text").focus();
+		//jQuery("#layer_text").focus();
 	}
-	
 	
 	/**
 	 * 
@@ -1591,7 +2891,7 @@ var UniteLayersRev = new function(){
 	var isLayerSelected = function(serial){
 		return(serial == selectedLayerSerial);
 	}
-
+	
 	/**
 	 * hide in html and sortbox
 	 */
@@ -1622,7 +2922,7 @@ var UniteLayersRev = new function(){
 	
 	
 	/**
-	 * hide all layers
+	 * show all layers
 	 */
 	var showAllLayers = function(){
 		for (serial in arrLayers)
@@ -1658,6 +2958,44 @@ var UniteLayersRev = new function(){
 		
 		return(true);
 	}
+	
+		
+	/**
+	 * get true / false if the layer can be moved
+	 */
+	var isLayerLocked = function(serial){
+		var htmlLayer = jQuery("#slide_layer_"+serial);
+		var isLocked = htmlLayer.attr('aria-disabled');
+		
+		if(typeof(isLocked) == 'undefined')
+			return false;
+		else
+			return (isLocked == 'false') ? false : true;
+	}
+	
+	
+	/**
+	 * hide in html and sortbox
+	 */
+	var lockLayer = function(serial){
+		setSortboxItemLocked(serial);
+		
+		var layer = getHtmlLayerFromSerial(serial);	
+		layer.draggable('disable');
+	}
+	
+	
+	/**
+	 * show layer in html and sortbox
+	 */
+	var unlockLayer = function(serial){
+		setSortboxItemUnlocked(serial);
+		
+		var layer = getHtmlLayerFromSerial(serial);	
+		layer.draggable('enable');
+	}
+	
+	
 	
 	
 //======================================================
@@ -1731,6 +3069,20 @@ var UniteLayersRev = new function(){
 			event.stopPropagation();
 		});
 		
+		//on show / hide layer icon click - show / hide layer
+		jQuery("#sortlist").delegate(".sortbox_lock","mousedown",function(event){
+			
+			var sortboxID = jQuery(this).parent().attr("id");
+			var serial = getSerialFromSortID(sortboxID);
+			if(isLayerLocked(serial))
+				unlockLayer(serial);
+			else
+				lockLayer(serial);
+
+			//prevent the layer from selecting
+			event.stopPropagation();
+		});
+		
 		
 		//show / hide all layers
 		jQuery("#button_sort_visibility").click(function(){
@@ -1773,6 +3125,22 @@ var UniteLayersRev = new function(){
 	var setSortboxItemVisible = function(serial){
 		var sortItem = getHtmlSortItemFromSerial(serial);
 		sortItem.removeClass("sortitem-hidden");
+	}
+	
+	/**
+	 * set sortbox item locked mode
+	 */
+	var setSortboxItemLocked = function(serial){
+		var sortItem = getHtmlSortItemFromSerial(serial);
+		sortItem.addClass("sortitem-locked");
+	}
+	
+	/**
+	 * set sortbox item unlocked mode
+	 */
+	var setSortboxItemUnlocked = function(serial){
+		var sortItem = getHtmlSortItemFromSerial(serial);
+		sortItem.removeClass("sortitem-locked");
 	}
 	
 	
@@ -1825,6 +3193,7 @@ var UniteLayersRev = new function(){
 		var htmlSortbox = '<li id="layer_sort_'+serial+'" class="ui-state-default'+classLI+'"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>';
 		htmlSortbox += '<span class="sortbox_text">' + sortboxText + '</span>';
 		htmlSortbox += '<div class="sortbox_eye"></div>';
+		htmlSortbox += '<div class="sortbox_lock"></div>';
 		htmlSortbox += '<input type="text" class="sortbox_time" title="Edit Timeline" value="'+objLayer.time+'">';
 		htmlSortbox += '<input type="text" class="sortbox_depth" readonly title="Edit Depth" value="'+depth+'">';
 		htmlSortbox += '<div class="clear"></div>';
@@ -2176,7 +3545,9 @@ var UniteLayersRev = new function(){
 		var totalHeight = container.height();
 		
 		var updateY,updateX;
-			
+		
+		setLayerSelected(layerSerial);
+		
 		switch(objLayer.align_hor){
 			case "left":
 				updateX = posLeft;
@@ -2203,11 +3574,11 @@ var UniteLayersRev = new function(){
 			break;
 		}
 		
-		var objUpdate = {top:updateY,left:updateX};
+		var objUpdate = {top:updateY,left:updateX,width:layerWidth,height:layerHeight};
 		updateLayer(layerSerial,objUpdate);	
 		
 		//update the position back with the rounded numbers (improve precision)
-		updateHtmlLayerPosition(htmlLayer,objUpdate.top,objUpdate.left);
+		updateHtmlLayerPosition(false,htmlLayer,objLayer,objUpdate.top,objUpdate.left);
 		
 		//update bottom fields (only if selected)
 		if(isLayerSelected(layerSerial))
@@ -2360,6 +3731,240 @@ var UniteLayersRev = new function(){
 	}
 	
 	
+	//======================================================
+	//	Scale Functions
+	//======================================================
+		/**
+		 * calculate image height/width
+		 */
+		
+		var scaleImage = function(){
+			jQuery("#layer_scaleX").change(function(){
+				if(jQuery("#layer_proportional_scale").is(":checked"))
+					scaleProportional(true);
+				else
+					scaleNormal();
+			});
+			
+			jQuery("#layer_scaleY").change(function(){
+				if(jQuery("#layer_proportional_scale").is(":checked"))
+					scaleProportional(false);
+				else
+					scaleNormal();
+			});
+			
+			jQuery("#layer_proportional_scale").click(function(){
+				if(jQuery(this).is(":checked")){
+					scaleProportional(true);
+				}else{
+					scaleNormal();
+				}
+			});
+			
+			
+			jQuery("#reset-scale").click(function(){
+				resetImageDimensions();
+				jQuery("#layer_proportional_scale").attr('checked', false);
+				jQuery("#layer_scaleX_text").html(jQuery("#layer_scaleX_text").data("textnormal")).css("width", "10px");
+				jQuery("#layer_scaleX").val("");
+				jQuery("#layer_scaleY").val("");
+				
+				jQuery("#slide_layer_" + selectedLayerSerial + " img").css("width", "");
+				jQuery("#slide_layer_" + selectedLayerSerial + " img").css("height", "");
+			
+				t.updateLayerFromFields();
+			});
+			
+		}
+		
+		var scaleProportional = function(useX){
+			var serial = selectedLayerSerial;
+			
+			resetImageDimensions();
+			
+			var imgObj = new Image();
+			imgObj.src = jQuery("#slide_layer_" + serial + " img").attr("src");
+			
+			if(useX){
+				var x = parseInt(jQuery("#layer_scaleX").val());
+				if(isNaN(x)) x = imgObj.width;
+				var y = Math.round(100 / imgObj.width * x / 100 * imgObj.height, 0);
+			}else{
+				var y = parseInt(jQuery("#layer_scaleY").val());
+				if(isNaN(y)) y = imgObj.height;
+				var x = Math.round(100 / imgObj.height * y / 100 * imgObj.width, 0);
+			}
+			
+			jQuery("#slide_layer_" + serial + " img").css("width", x + "px");
+			jQuery("#slide_layer_" + serial + " img").css("height", y + "px");
+
+			jQuery("#slide_layer_" + serial).css("width", jQuery("#slide_layer_" + serial + " img").width() + "px");
+			jQuery("#slide_layer_" + serial).css("height", jQuery("#slide_layer_" + serial + " img").height() + "px");
+			
+			jQuery("#slide_layer_" + serial + " img").css("width", "100%");
+			jQuery("#slide_layer_" + serial + " img").css("height", "100%");
+			
+			jQuery("#layer_scaleX").val(x);
+			jQuery("#layer_scaleY").val(y);
+		}
+		
+		var scaleNormal = function(){
+			var serial = selectedLayerSerial;
+			
+			resetImageDimensions();
+			
+			jQuery("#slide_layer_" + serial + " img").css("width", jQuery("#layer_scaleX").val() + "px");
+			jQuery("#slide_layer_" + serial + " img").css("height", jQuery("#layer_scaleY").val() + "px");
+
+			jQuery("#slide_layer_" + serial).css("width", jQuery("#slide_layer_" + serial + " img").width() + "px");
+			jQuery("#slide_layer_" + serial).css("height", jQuery("#slide_layer_" + serial + " img").height() + "px");
+			
+			jQuery("#slide_layer_" + serial + " img").css("width", "100%");
+			jQuery("#slide_layer_" + serial + " img").css("height", "100%");
+		}
+		
+		var resetImageDimensions = function(){
+			var imgObj = new Image();
+			imgObj.src = jQuery("#slide_layer_" + selectedLayerSerial + " img").attr("src");
+			
+			jQuery("#slide_layer_" + selectedLayerSerial).css("width", imgObj.width + "px");
+			jQuery("#slide_layer_" + selectedLayerSerial).css("height", imgObj.height + "px");
+		}
+		
+	//======================================================
+	//	Scale Functions End
+	//======================================================
+	
+	t.getLayerGeneralParamsStatus = function(){
+		return layerGeneralParamsStatus;
+	}
+	
+	//======================================================
+	//	Main Background Image Functions
+	//======================================================
+	
+	var initBackgroundFunctions = function(){
+	
+		jQuery('#slide_bg_fit').change(function(){
+			if(jQuery(this).val() == 'percentage'){
+				jQuery('input[name="bg_fit_x"]').show();
+				jQuery('input[name="bg_fit_y"]').show();
+				
+				jQuery('#divLayers').css('background-size', jQuery('input[name="bg_fit_x"]').val()+'% '+jQuery('input[name="bg_fit_y"]').val()+'%');
+			}else{
+				jQuery('input[name="bg_fit_x"]').hide();
+				jQuery('input[name="bg_fit_y"]').hide();
+				
+				jQuery('#divLayers').css('background-size', jQuery(this).val());
+			}
+		});
+		
+		jQuery('input[name="bg_fit_x"]').change(function(){
+			jQuery('#divLayers').css('background-size', jQuery('input[name="bg_fit_x"]').val()+'% '+jQuery('input[name="bg_fit_y"]').val()+'%');
+		});
+		
+		jQuery('input[name="bg_fit_y"]').change(function(){
+			jQuery('#divLayers').css('background-size', jQuery('input[name="bg_fit_x"]').val()+'% '+jQuery('input[name="bg_fit_y"]').val()+'%');
+		});
+		
+		jQuery('#slide_bg_position').change(function(){
+			if(jQuery(this).val() == 'percentage'){
+				jQuery('input[name="bg_position_x"]').show();
+				jQuery('input[name="bg_position_y"]').show();
+				
+				jQuery('#divLayers').css('background-position', jQuery('input[name="bg_fit_x"]').val()+'% '+jQuery('input[name="bg_fit_y"]').val()+'%');
+			}else{
+				jQuery('input[name="bg_position_x"]').hide();
+				jQuery('input[name="bg_position_y"]').hide();
+				
+				jQuery('#divLayers').css('background-position', jQuery(this).val());
+			}
+		});
+		
+		jQuery('input[name="bg_position_x"]').change(function(){
+			jQuery('#divLayers').css('background-position', jQuery('input[name="bg_position_x"]').val()+'% '+jQuery('input[name="bg_position_y"]').val()+'%');
+		});
+		
+		jQuery('input[name="bg_position_y"]').change(function(){
+			jQuery('#divLayers').css('background-position', jQuery('input[name="bg_position_x"]').val()+'% '+jQuery('input[name="bg_position_y"]').val()+'%');
+		});
+		
+		jQuery('#slide_bg_repeat').change(function(){
+			jQuery('#divLayers').css('background-repeat', jQuery(this).val());
+		});
+		
+		jQuery('input[name="kenburn_effect"]').change(function(){
+			if(jQuery(this).val() == "on"){
+				jQuery('#kenburn_wrapper').show();
+				jQuery('#bg-position-lbl').hide();
+				jQuery('#bg-start-position-wrapper').children().appendTo(jQuery('#bg-start-position-wrapper-kb'));
+				jQuery('#bg-setting-wrap').hide();
+				
+				jQuery('#divLayers').css('background-repeat', '');
+				jQuery('#divLayers').css('background-position', '');
+				jQuery('#divLayers').css('background-size', '');
+				
+				jQuery('input[name="kb_start_fit"]').change();
+			}else{
+				jQuery('#kenburn_wrapper').hide();
+				jQuery('#bg-position-lbl').show();
+				jQuery('#bg-start-position-wrapper-kb').children().appendTo(jQuery('#bg-start-position-wrapper'));
+				jQuery('#bg-setting-wrap').show();
+				
+				jQuery('#slide_bg_repeat').change();
+				jQuery('#slide_bg_position').change();
+				jQuery('#slide_bg_fit').change();
+			}
+		});
+		
+		
+		jQuery('#slide_bg_end_position').change(function(){
+			if(jQuery(this).val() == 'percentage'){
+				jQuery('input[name="bg_end_position_x"]').show();
+				jQuery('input[name="bg_end_position_y"]').show();
+			}else{
+				jQuery('input[name="bg_end_position_x"]').hide();
+				jQuery('input[name="bg_end_position_y"]').hide();
+			}
+		});
+		
+		
+		jQuery('input[name="kb_start_fit"]').change(function(){
+			var fitVal = parseInt(jQuery(this).val());
+			var limg = new Image();
+			limg.onload = function() {
+				calculateKenBurnScales(fitVal, limg.width, limg.height, jQuery('#divLayers'));
+			}
+			
+			var urlImage = '';
+			if(jQuery('#radio_back_image').is(':checked'))
+				urlImage = jQuery("#image_url").val();
+			else if(jQuery('#radio_back_external').is(':checked'))
+				urlImage = jQuery("#slide_bg_external").val();
+			
+			if(urlImage != ''){
+				limg.src = urlImage;
+			}
+			
+		});
+		
+		var calculateKenBurnScales = function(proc,owidth,oheight,opt) {
+		   var ow = owidth;
+		   var oh = oheight;
+		   
+		   var factor = (opt.width() /ow);
+		   var nheight = oh * factor;
+		   
+		   var hfactor = (nheight / opt.height())*proc;
+		   
+		   jQuery('#divLayers').css('background-size', proc+"% "+hfactor+"%");
+		}
+		
+	}
+	
+	//======================================================
+	//	Main Background Image Functions End
+	//======================================================
 }
 
 

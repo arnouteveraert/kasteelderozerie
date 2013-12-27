@@ -1,3 +1,153 @@
+version 4.1.3:
+
+- Change: Imported images through slider import create now also the thumbnails
+
+- Bug fix: stripslashes problem in global styles at slider imports fixed
+- Bug fix: multisite import of slider now correctly imports images
+- Bug fix: selecting thumbnails/video overlays now work on multisites
+
+
+version 4.1.2:
+
+- Change: Deleting Posts inside a Post Slider will now trash instead of deleting them
+
+- Bug fix: Fixed a z-index issue where the-events-calendar set the jquery-ui-dialog overlay over the Slider Revolution Dialogs
+- Bug Fix: Http / Https loading of API’S in the right format depending on the current URL
+- Bug Fix: Issue solved with the HTML5 Video Sizing
+- Bug Fix: YouTube Api does not work without the origin=http://yourdomain any more !!
+		   - The slider adds this now automatically on every YouTube video.
+		   NOTE: Please note that this only works on live servers and not local installations.
+				 For example: autoplay will not work on local machines but on your live servers
+
+
+version 4.1.1:
+
+- Feature: New API Method: rev redraw for Redrawing the current Slide in case, slider is included some animated container.
+- Feature: New tab in Slider Settings: Reset Options.
+			- Reset all Transitions of this Slider to a choosen one
+			- Reset all Transition Durations of this Slider to a choosen one
+- Feature: New Dropdown on Post/Pages for revslider Shortcodes (found in Visual mode of Editor)
+
+- Change: New button in Slide Edit mode to go back to Slide List of Slider
+
+- Bug fix: Remove of Aspect Ratio and Dotted Overlay if Cover was not choosen in HTML5 Videos
+- Bug fix: Fixed a bug on import of Slider where custom arrows might break
+- Bug fix: Fixed a bug for Missing static-captions.css 
+- Bug fix: Fixed FF and IE10 Animation issues
+- Bug fix: Fixed Wrong calculated Center positions if Caption has CSS3 Animations associated 
+
+
+version 4.1:
+
+- Feature: Ken Burns Effect (align start/end) bg Fit (start/end), Speed and easing
+- Feature: Min Height for Fullscreen Sliders
+- Feature: Fullscreen HTML5 Videos with new functions
+- Feature: Cover the whole HTML5 Videoscreen (no black borders)
+- Feature: Dotted overlays on HTML5 Videos with cover & slide backgrounds
+- Feature: Dotted Overlay on Background Images (global setting)
+- Feature: Mute option on Videos
+- Feature: Force Rewind of Videos on slideview
+
+- Change: Fallback to old export if zip extension is not installed on server
+
+- Bug fix: Post meta tag fix for plugin: Types - Complete Solution for Custom Fields and Types
+
+
+version 4.0.6:
+
+- Bug fix: Force Fullwidth Offsets
+- Bug fix: Added FF Protection for 3d Animated Elements
+- Bug fix: Update GreenSock Engine with Protection for FF25 Animations
+- Bug fix: IE8 HALO Effect Solved
+
+
+version 4.0.5:
+
+- Feature: New Background-Image options in slider settings under Appearance Tab
+- Feature: Usage of placeholder %link% and %meta:somemeta% for Slide Link in General Slide Settings
+
+- Change: Added fallback for dynamic-captions.css (if not writable, load captions.php instead)
+
+- Bug fix: Fixed a bug where no layers could be added to Slides
+- Bug fix: Fixed a bug where Post Sliders do not show the correct thumbnails in navigation
+- Bug fix: Fixed a few texts for better multilanguage support
+
+version 4.0.4:
+
+- Bug fix: inserted two missing functions
+
+
+version 4.0.3:
+
+- Change: the option Responsive Through All Levels in layers is now checked as default
+- Change: set default background-position of main slide image to center top
+
+- Bug fix: bug in interpreting the css fixed
+- Bug fix: fixed a bug that occures on some video layers and that may brake the edit slide page
+- Bug fix: fixed a bug with Post Sliders not being shown with the template Slider styles
+
+
+version 4.0.2:
+
+- Bug fix: WPML was not working correctly, fixed "Wrong Request" bug
+
+
+version 4.0.1:
+
+- Change: add revision to css/js files to prevent caching issues
+
+
+version 4.0:
+
+- Introducing: New Live Style Editor (Simple and Advanced)
+- Introducing: Custom Caption Creator
+- Introducing: Live Caption Animation Viewer in Editor
+- Introducing: Export Feature (with Images and Static/Dynamic Styles and with Custom Animations)
+- Introducing: New Main Image Aligns, Repeating and Sizing (like center,center, repeat-x,y,no, cover and container and many more)
+- Introducing: New Layout Viewer ( to see differences between, fullwidth, fullscreen, custom) 
+
+
+- Feature: Only Styles are loaded which used in Current Slides
+- Feature: template slider for post slider added
+- Feature: allow external images as slide backgrounds
+- Feature: new options for videos
+- Feature: many other new options added
+- Feature: added relpace url's neer export / import slider
+- Feature: new options for hiding thumbs/bullets/arrows on mobile
+- Feature: new option force fill width in autoresponsive mode
+- Feature: id, class, rel tag can be set for each element
+- Feature: alt tag for images can be set
+- Feature: layers can now be locked
+- Feature: layer images can now be resized
+- Feature: Added new Flat Transitions
+- Feature: Added FullScreen and FullWidth Forcing in Boxed Themes
+- Feature: Added Thumbnail for Videos
+- Feature: Tooltip for Titles
+- Feature: Shadow Prelayouts
+- Feature: Move Tabs to Change Slide Order
+- Feature: Published / Unpublished Slides also Date / Time Dependent
+- Feature: Loop and Controlless HTML5 Videos
+- Feature: Play Video only First Time, then Hold
+- Feature: Linear Resizing of Thumbs
+- Feature: Unlimited Containers for Offsetting Fullscreen Height 
+
+- Change: Style of Backend in Flat Style
+- Change: Much cleaner interface
+- Change: Load Plugins and Revolution Slider splitter, dependent on Other Plugins 
+- Change: Jquery.themepunch.revolution.min.js loads now in the footer (Optional)
+- Change: Main transitions are now listed in flat and premium transitions
+
+- Bug fix: many small/mayor bug fixes
+- Bug fix: added error messages on some situations in slider by post view.
+- Bug fix: fixed css bug that made the screens overlap with wordpress error messages
+- Bug fix: fixed image positioning in edit layers js file
+- Bug fix: fixed images url's output in https websites
+
+version 3.0.96
+
+- bug fix: added validation to slider settings and slide settings.
+- bug fix: added nonce check on ajax requests - improved security.
+
 version 3.0.95
 
 - bug fix: fixed some bug in widget class
