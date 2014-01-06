@@ -31,6 +31,22 @@
 			font-family: museoslab500regular;
 		}
 
+.avada_homerozerie_big_white_text{
+			position: absolute; 
+			color: #fff; 
+			font-size: 42px; 
+			line-height: 45px; 
+			font-family: museoslab500regular;
+		}
+  
+.avada_homerozerie_mid_white_text{
+			position: absolute; 
+			color: #fff; 
+			font-size: 42px; 
+			line-height: 45px; 
+			font-family: museoslab500regular;
+		}
+
 .avada_big_black_text_center{
 			position: absolute; 
 			color: #333333; 

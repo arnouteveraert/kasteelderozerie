@@ -8,4 +8,6 @@ Template: Avada
 @import url("../Avada/style.css");
 
 
+h1 {margin-top:5px; padding-top:5px; line-height:20px;}
+
 
